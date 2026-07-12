@@ -21,7 +21,7 @@ st.set_page_config(
     page_title="Sleep & Lifestyle — All of Us",
     page_icon="🌙",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 # ── Design tokens ─────────────────────────────────────────────────────────────
@@ -82,6 +82,26 @@ p, li, label {
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:hover {
     background: rgba(255,255,255,0.08);
+}
+.top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: rgba(7,19,31,0.94);
+    border: 1px solid rgba(148,163,184,0.16);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: -8px 0 18px;
+    backdrop-filter: blur(10px);
+}
+.top-nav [role="radiogroup"] {
+    gap: 6px;
+}
+.top-nav label {
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius: 8px;
+    padding: 7px 10px;
+    background: rgba(15,27,42,0.72);
 }
 
 /* Metric cards */
@@ -443,6 +463,16 @@ p, li, label {
     }
     .status-row { grid-template-columns: 1fr; }
     .phenotype-bar { grid-template-columns: 1fr; gap: 5px; }
+    .clinical-panel { padding: 16px; }
+    .clinical-copy { font-size: 0.92rem; }
+    .top-nav {
+        margin-top: -4px;
+        overflow-x: auto;
+    }
+    .top-nav [role="radiogroup"] {
+        flex-wrap: nowrap;
+        min-width: max-content;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -563,6 +593,8 @@ def clean_imp(df):
     s = df.iloc[:,0].copy(); s.index = [FEAT.get(i, i) for i in s.index]
     return s.sort_values(ascending=False)
 
+PAGES = ["Overview", "Models", "Sleep Phenotypes", "Fairness", "Feature Importance"]
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("## Sleep & Lifestyle")
@@ -570,17 +602,13 @@ with st.sidebar:
     st.markdown("SIADS 699 &nbsp;·&nbsp; Team Sleep Deprived &nbsp;·&nbsp; 2026", unsafe_allow_html=True)
     st.caption("Sophia Boettcher · Auston Balwinski\nHunter Belous · Jared Fox")
     st.divider()
-    page = st.radio("Dashboard section", [
-        "Overview",
-        "Models",
-        "Sleep Phenotypes",
-        "Fairness",
-        "Feature Importance",
-    ], label_visibility="collapsed")
-    st.divider()
     st.markdown("**Cohort:** 59,757 participants  \n**Source:** All of Us CDR v9  \n**Device:** Fitbit")
     st.divider()
     st.caption("Aggregate statistics only.\nNo individual-level data exported from Workbench.")
+
+st.markdown('<div class="top-nav">', unsafe_allow_html=True)
+page = st.radio("Choose a dashboard section", PAGES, horizontal=True, label_visibility="collapsed")
+st.markdown('</div>', unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # OVERVIEW
@@ -595,8 +623,8 @@ if "Overview" in page:
         <p class="clinical-label">Cohort sleep health signal</p>
         <div class="clinical-score"><strong>6.79</strong><span>hours/night average</span></div>
         <p class="clinical-copy">
-          Average sleep duration sits just below the 7-hour reference threshold, while short sleep burden
-          and night-to-night variability identify a meaningful risk segment for follow-up.
+          Average sleep duration sits just below the 7-hour reference threshold. Short sleep and night-to-night
+          variability identify a meaningful risk segment for follow-up.
         </p>
         <div class="status-row">
           <div class="status-pill" style="--accent:#E9B44C"><b>Below reference</b><span>Mean duration under 7h</span></div>
@@ -679,11 +707,8 @@ elif "Models" in page:
     st.markdown("Compare simple baseline models with models that add health, activity, and survey information.")
     st.divider()
 
-    ctrl1, ctrl2 = st.columns([1, 1])
-    with ctrl1:
-        target = st.radio("What should the model predict?", ["Sleep Duration", "Sleep Consistency (IQR)"], horizontal=True)
-    with ctrl2:
-        model_metric = st.radio("How should accuracy be shown?", ["Model fit", "Prediction error"], horizontal=True)
+    target = st.radio("What should the model predict?", ["Sleep Duration", "Sleep Consistency (IQR)"], horizontal=True)
+    model_metric = st.radio("How should accuracy be shown?", ["Model fit", "Prediction error"], horizontal=True)
     tkey  = "mean_sleep_hrs" if "Duration" in target else "iqr_sleep_hrs"
     tlbl  = "Sleep Duration" if "Duration" in target else "Sleep Consistency"
 
@@ -700,7 +725,7 @@ elif "Models" in page:
 
     y = np.arange(len(all_m))
     best_model = p2d.idxmax() if metric_col == 'R2' else p2d.idxmin()
-    fig, ax = chart_fig(11.5, 5.2)
+    fig, ax = chart_fig(10, 6.2)
     ax.hlines(y, p1d, p2d, color=LGRAY, lw=9, zorder=1)
     ax.scatter(p1d, y, s=145, color=BLUE, alpha=0.45, edgecolor=WHITE, linewidth=1.2, label='Phase 1')
     ax.scatter(p2d, y, s=[230 if m == best_model else 165 for m in all_m],
@@ -759,13 +784,9 @@ elif "Phenotypes" in page:
           'Chronic Short & Variable':'❌','Variable Long Sleepers':'🔄'}
 
     total = cl['N'].sum()
-    pcol1, pcol2, pcol3 = st.columns([1, 1, 1])
-    with pcol1:
-        sort_choice = st.selectbox("How should groups be sorted?", ["Sleep duration", "Cohort share", "Variability", "Short-night rate"])
-    with pcol2:
-        x_choice = st.selectbox("What should define the horizontal position?", ["Sleep duration", "Daily steps", "Age", "BMI"])
-    with pcol3:
-        y_choice = st.selectbox("What should define the vertical position?", ["Variability", "Short-night rate", "Daily steps", "BMI"])
+    sort_choice = st.selectbox("How should groups be sorted?", ["Sleep duration", "Cohort share", "Variability", "Short-night rate"])
+    x_choice = st.selectbox("What should define the horizontal position?", ["Sleep duration", "Daily steps", "Age", "BMI"])
+    y_choice = st.selectbox("What should define the vertical position?", ["Variability", "Short-night rate", "Daily steps", "BMI"])
 
     sort_map = {
         "Sleep duration": ("mean_sleep", False),
@@ -797,7 +818,7 @@ elif "Phenotypes" in page:
     st.markdown(cards_html, unsafe_allow_html=True)
 
     section("Group Map")
-    fig, ax = chart_fig(10, 5)
+    fig, ax = chart_fig(9, 6)
     for _, row in cl.iterrows():
         nm = row['cluster_label']
         c = CC.get(nm, BLUE)
@@ -844,11 +865,8 @@ elif "Fairness" in page:
     st.markdown("Check whether model accuracy is similar across demographic groups.")
     st.divider()
 
-    fcol1, fcol2 = st.columns([1, 1])
-    with fcol1:
-        target = st.radio("Which outcome should be checked?", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
-    with fcol2:
-        fairness_view = st.radio("How should differences be shown?", ["Deviation from average", "Raw model fit"], horizontal=True)
+    target = st.radio("Which outcome should be checked?", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
+    fairness_view = st.radio("How should differences be shown?", ["Deviation from average", "Raw model fit"], horizontal=True)
     tkey = "mean_sleep_hrs" if "Duration" in target else "iqr_sleep_hrs"
     sub  = fair[fair.target == tkey].copy()
     overall = sub['R2'].mean()
@@ -861,7 +879,7 @@ elif "Fairness" in page:
     takeaway(f"<b>Bottom line:</b> model fit is not even across groups. For sleep duration, UBR participants have about a {gap:.0f}% lower model fit than White participants.")
 
     colors = [RED if d < -0.005 else GREEN if d > 0.005 else LGRAY for d in sub['delta']]
-    fig, ax = chart_fig(11.5, 6)
+    fig, ax = chart_fig(10, 6.6)
     plot_values = sub['delta'] if fairness_view == "Deviation from average" else sub['R2']
     bars = ax.barh(sub['subgroup'], plot_values, color=colors, alpha=0.9, edgecolor=WHITE, height=0.58)
     if fairness_view == "Deviation from average":
@@ -910,13 +928,9 @@ elif "Importance" in page:
     st.markdown("See which inputs the model used most when making sleep predictions.")
     st.divider()
 
-    icol1, icol2, icol3 = st.columns([1, 1, 1])
-    with icol1:
-        target = st.radio("Which outcome should be explained?", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
-    with icol2:
-        top_n = st.slider("How many factors should be shown?", 5, 18, 12)
-    with icol3:
-        show_table = st.toggle("Show full table", value=True)
+    target = st.radio("Which outcome should be explained?", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
+    top_n = st.slider("How many factors should be shown?", 5, 18, 12)
+    show_table = st.toggle("Show full table", value=True)
     imp = clean_imp(imp_d if "Duration" in target else imp_c)
     imp = imp[imp > 0.005]
     imp_chart = imp.head(top_n)
@@ -932,7 +946,7 @@ elif "Importance" in page:
             colors.append(AMBER)
         else:
             colors.append(BLUE)
-    fig, ax = chart_fig(11.5, max(5.4, len(simp)*0.46))
+    fig, ax = chart_fig(9, max(6.6, len(simp)*0.58))
     bars = ax.barh(simp.index, simp.values, color=colors, alpha=0.88, edgecolor=WHITE, height=0.58)
     for bar, val in zip(bars, simp.values):
         ax.text(val + 0.003, bar.get_y() + bar.get_height()/2, f'{val:.3f}',
