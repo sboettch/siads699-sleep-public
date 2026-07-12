@@ -6,7 +6,7 @@
 ![Fitbit Wearables](https://img.shields.io/badge/Fitbit-Wearables-teal)
 
 > **SIADS 699 Capstone Project** · University of Michigan School of Information · July 2026  
-> *Sophia Boettcher*
+> *Sophia Boettcher, Auston Balwinski, Hunter Belous, Jared Fox*
 
 ---
 

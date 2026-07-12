@@ -25,12 +25,12 @@ st.set_page_config(
 )
 
 # ── Design tokens ─────────────────────────────────────────────────────────────
-BG    = '#F8F9FA'
-WHITE = '#FFFFFF'
-DGRAY = '#1a1a2e'
-MGRAY = '#6c757d'
-LGRAY = '#dee2e6'
-VGRAY = '#f1f3f5'
+BG    = '#0B1020'
+WHITE = '#101827'
+DGRAY = '#F8FAFC'
+MGRAY = '#CBD5E1'
+LGRAY = '#334155'
+VGRAY = '#1E293B'
 RED   = '#E05C3A'
 BLUE  = '#3B7EC8'
 GREEN = '#5AA469'
@@ -43,10 +43,12 @@ st.markdown("""
 html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
 
 [data-testid="stAppViewContainer"] {
-    background: #F8F9FA !important;
+    background:
+        radial-gradient(circle at top right, rgba(59,126,200,0.20), transparent 34rem),
+        linear-gradient(180deg, #0B1020 0%, #111827 100%) !important;
 }
 [data-testid="stHeader"] {
-    background: rgba(248,249,250,0.85) !important;
+    background: rgba(11,16,32,0.86) !important;
 }
 .block-container {
     max-width: 1240px;
@@ -57,12 +59,12 @@ h1, h2, h3, p, li, label, span, div {
     letter-spacing: 0 !important;
 }
 h1 {
-    color: #1a1a2e !important;
+    color: #F8FAFC !important;
     font-weight: 750 !important;
     line-height: 1.08 !important;
 }
 p, li, label {
-    color: #2f3440;
+    color: #DDE6F3;
 }
 
 /* Sidebar */
@@ -89,17 +91,18 @@ p, li, label {
     margin: 16px 0;
 }
 .kpi-card {
-    background: white; border-radius: 8px;
+    background: rgba(16,24,39,0.92); border-radius: 8px;
     padding: 22px 18px; text-align: center;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.22);
+    border: 1px solid rgba(148,163,184,0.18);
     border-top: 4px solid var(--accent, #3B7EC8);
     transition: box-shadow 0.2s;
 }
-.kpi-card:hover { box-shadow: 0 4px 18px rgba(59,126,200,0.18); }
+.kpi-card:hover { box-shadow: 0 18px 38px rgba(59,126,200,0.20); }
 .kpi-val   { font-size: clamp(1.45rem, 2.6vw, 2rem); font-weight: 750; color: var(--accent, #3B7EC8); margin: 0; line-height: 1; }
-.kpi-label { font-size: 0.78rem; font-weight: 600; color: #6c757d; margin: 6px 0 2px;
+.kpi-label { font-size: 0.78rem; font-weight: 600; color: #CBD5E1; margin: 6px 0 2px;
              text-transform: uppercase; letter-spacing: 0.06em; }
-.kpi-sub   { font-size: 0.75rem; color: #adb5bd; margin: 0; }
+.kpi-sub   { font-size: 0.75rem; color: #94A3B8; margin: 0; }
 
 /* Insight chips */
 .insight-grid {
@@ -109,8 +112,8 @@ p, li, label {
     margin: 16px 0 8px;
 }
 .insight {
-    background: #fff;
-    border: 1px solid #e9ecef;
+    background: rgba(16,24,39,0.88);
+    border: 1px solid rgba(148,163,184,0.18);
     border-left: 5px solid var(--accent, #3B7EC8);
     border-radius: 8px;
     padding: 14px 16px;
@@ -124,13 +127,13 @@ p, li, label {
     margin: 0 0 7px;
 }
 .insight-label {
-    color: #1a1a2e;
+    color: #F8FAFC;
     font-size: 0.9rem;
     font-weight: 650;
     margin: 0 0 4px;
 }
 .insight-sub {
-    color: #6c757d;
+    color: #CBD5E1;
     font-size: 0.78rem;
     margin: 0;
     line-height: 1.35;
@@ -139,12 +142,13 @@ p, li, label {
 /* Callout boxes */
 .box {
     border-radius: 8px; padding: 14px 18px; margin: 10px 0;
-    font-size: 0.92rem; line-height: 1.55; color: #1a1a2e;
+    font-size: 0.92rem; line-height: 1.55; color: #F8FAFC;
+    border: 1px solid rgba(148,163,184,0.18);
 }
-.box-blue  { background: #EEF4FF; border-left: 4px solid #3B7EC8; }
-.box-red   { background: #FFF3EE; border-left: 4px solid #E05C3A; }
-.box-green { background: #EDFFF4; border-left: 4px solid #5AA469; }
-.box b     { color: #1a1a2e; }
+.box-blue  { background: rgba(59,126,200,0.16); border-left: 4px solid #3B7EC8; }
+.box-red   { background: rgba(224,92,58,0.16); border-left: 4px solid #E05C3A; }
+.box-green { background: rgba(90,164,105,0.16); border-left: 4px solid #5AA469; }
+.box b     { color: #FFFFFF; }
 
 /* Cluster cards */
 .cl-grid {
@@ -154,28 +158,29 @@ p, li, label {
     margin: 16px 0;
 }
 .cl-card {
-    background: white; border-radius: 8px; padding: 18px 16px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    background: rgba(16,24,39,0.92); border-radius: 8px; padding: 18px 16px;
+    border: 1px solid rgba(148,163,184,0.18);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.22);
     transition: transform 0.15s, box-shadow 0.15s;
 }
-.cl-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.11); }
+.cl-card:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(0,0,0,0.26); }
 .cl-icon  { font-size: 1.6rem; margin-bottom: 6px; }
 .cl-name  { font-weight: 700; font-size: 0.88rem; margin: 6px 0 4px; }
-.cl-n     { font-size: 1.6rem; font-weight: 700; color: #1a1a2e; margin: 0; }
-.cl-pct   { font-size: 0.78rem; color: #adb5bd; margin: 0 0 10px; }
-.cl-divider { border: none; border-top: 1px solid #f0f0f0; margin: 10px 0; }
-.cl-stat  { font-size: 0.82rem; color: #495057; margin: 3px 0; }
+.cl-n     { font-size: 1.6rem; font-weight: 700; color: #F8FAFC; margin: 0; }
+.cl-pct   { font-size: 0.78rem; color: #94A3B8; margin: 0 0 10px; }
+.cl-divider { border: none; border-top: 1px solid rgba(148,163,184,0.18); margin: 10px 0; }
+.cl-stat  { font-size: 0.82rem; color: #CBD5E1; margin: 3px 0; }
 
 /* Section header */
 .section-label {
     font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
-    text-transform: uppercase; color: #6c757d; margin: 24px 0 8px;
+    text-transform: uppercase; color: #94A3B8; margin: 24px 0 8px;
 }
 
 /* Compact tables rendered as responsive cards */
 .table-card {
-    background: #fff;
-    border: 1px solid #e9ecef;
+    background: rgba(16,24,39,0.92);
+    border: 1px solid rgba(148,163,184,0.18);
     border-radius: 8px;
     overflow-x: auto;
     box-shadow: 0 1px 5px rgba(0,0,0,0.04);
@@ -186,19 +191,19 @@ p, li, label {
     min-width: 360px;
 }
 .mini-table th {
-    background: #f8f9fa;
-    color: #6c757d;
+    background: rgba(15,23,42,0.92);
+    color: #CBD5E1;
     font-size: 0.73rem;
     text-transform: uppercase;
     text-align: left;
     padding: 10px 12px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid rgba(148,163,184,0.18);
 }
 .mini-table td {
-    color: #1a1a2e;
+    color: #F8FAFC;
     font-size: 0.86rem;
     padding: 10px 12px;
-    border-bottom: 1px solid #f1f3f5;
+    border-bottom: 1px solid rgba(148,163,184,0.12);
     white-space: nowrap;
 }
 .mini-table tr:last-child td {
@@ -209,7 +214,7 @@ p, li, label {
     min-width: 28px;
     padding: 2px 8px;
     border-radius: 999px;
-    background: #eef4ff;
+    background: rgba(59,126,200,0.22);
     color: #3B7EC8;
     font-weight: 700;
     text-align: center;
@@ -407,7 +412,11 @@ elif "Models" in page:
     st.markdown("5-fold cross-validated R² and MAE across all 59,757 participants.")
     st.divider()
 
-    target = st.radio("Prediction target:", ["Sleep Duration", "Sleep Consistency (IQR)"], horizontal=True)
+    ctrl1, ctrl2 = st.columns([1, 1])
+    with ctrl1:
+        target = st.radio("Prediction target:", ["Sleep Duration", "Sleep Consistency (IQR)"], horizontal=True)
+    with ctrl2:
+        model_metric = st.radio("Chart metric:", ["R² lift", "MAE change"], horizontal=True)
     tkey  = "mean_sleep_hrs" if "Duration" in target else "iqr_sleep_hrs"
     tlbl  = "Sleep Duration" if "Duration" in target else "Sleep Consistency"
 
@@ -415,11 +424,13 @@ elif "Models" in page:
     p2 = cv2[cv2.target == tkey][['model','R2','MAE']].copy()
 
     all_m = list(p1['model'].unique()) + [m for m in p2['model'].unique() if m not in p1['model'].values]
-    p1d = p1.set_index('model')['R2'].reindex(all_m).fillna(0)
-    p2d = p2.set_index('model')['R2'].reindex(all_m).fillna(0)
+    metric_col = 'R2' if model_metric == "R² lift" else 'MAE'
+    metric_label = 'R² (higher is better)' if metric_col == 'R2' else 'MAE hours (lower is better)'
+    p1d = p1.set_index('model')[metric_col].reindex(all_m).fillna(0)
+    p2d = p2.set_index('model')[metric_col].reindex(all_m).fillna(0)
 
     y = np.arange(len(all_m))
-    best_model = p2d.idxmax()
+    best_model = p2d.idxmax() if metric_col == 'R2' else p2d.idxmin()
     fig, ax = chart_fig(11.5, 5.2)
     ax.hlines(y, p1d, p2d, color=LGRAY, lw=9, zorder=1)
     ax.scatter(p1d, y, s=145, color=BLUE, alpha=0.45, edgecolor=WHITE, linewidth=1.2, label='Phase 1')
@@ -428,16 +439,18 @@ elif "Models" in page:
                alpha=0.95, edgecolor=WHITE, linewidth=1.4, label='Phase 2')
     for i, m in enumerate(all_m):
         delta = p2d[m] - p1d[m]
-        ax.text(max(p1d[m], p2d[m]) + 0.006, i, f"{p2d[m]:.3f}  ({delta:+.3f})",
+        label_delta = delta if metric_col == 'R2' else -delta
+        ax.text(max(p1d[m], p2d[m]) + (0.006 if metric_col == 'R2' else 0.018), i,
+                f"{p2d[m]:.3f}  ({label_delta:+.3f})",
                 va='center', fontsize=9.5, color=DGRAY, fontweight='700' if m == best_model else '500')
     ax.set_yticks(y)
     ax.set_yticklabels(all_m, fontsize=10, color=DGRAY)
-    ax.set_xlabel('R² (cross-validated)', fontsize=10, color=MGRAY)
-    ax.set_title(f'Model Accuracy Lift — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=12)
+    ax.set_xlabel(metric_label, fontsize=10, color=MGRAY)
+    ax.set_title(f'Model {model_metric} — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=12)
     ax.xaxis.grid(True, color=LGRAY, lw=0.8)
     ax.yaxis.grid(False)
     ax.legend(fontsize=9)
-    ax.set_xlim(0, max(p1d.max(), p2d.max()) * 1.35)
+    ax.set_xlim(0, max(p1d.max(), p2d.max()) * (1.35 if metric_col == 'R2' else 1.18))
     for sp in ['left']:
         ax.spines[sp].set_visible(False)
     plt.tight_layout()
@@ -476,8 +489,25 @@ elif "Phenotypes" in page:
           'Chronic Short & Variable':'❌','Variable Long Sleepers':'🔄'}
 
     total = cl['N'].sum()
+    pcol1, pcol2, pcol3 = st.columns([1, 1, 1])
+    with pcol1:
+        sort_choice = st.selectbox("Sort phenotype cards by:", ["Sleep duration", "Cohort share", "Variability", "Short-night rate"])
+    with pcol2:
+        x_choice = st.selectbox("Map x-axis:", ["Sleep duration", "Daily steps", "Age", "BMI"])
+    with pcol3:
+        y_choice = st.selectbox("Map y-axis:", ["Variability", "Short-night rate", "Daily steps", "BMI"])
+
+    sort_map = {
+        "Sleep duration": ("mean_sleep", False),
+        "Cohort share": ("N", False),
+        "Variability": ("mean_iqr", False),
+        "Short-night rate": ("pct_short", False),
+    }
+    x_map = {"Sleep duration": "mean_sleep", "Daily steps": "mean_steps", "Age": "mean_age", "BMI": "mean_bmi"}
+    y_map = {"Variability": "mean_iqr", "Short-night rate": "pct_short", "Daily steps": "mean_steps", "BMI": "mean_bmi"}
+    sort_col, ascending = sort_map[sort_choice]
     cards_html = '<div class="cl-grid">'
-    for _, row in cl.sort_values('mean_sleep', ascending=False).iterrows():
+    for _, row in cl.sort_values(sort_col, ascending=ascending).iterrows():
         nm = row['cluster_label']; c = CC.get(nm, BLUE); ic = CI.get(nm, '•')
         cards_html += f"""
         <div class="cl-card" style="border-top: 5px solid {c}">
@@ -501,17 +531,20 @@ elif "Phenotypes" in page:
         nm = row['cluster_label']
         c = CC.get(nm, BLUE)
         size = 240 + (row['N'] / total) * 2300
-        ax.scatter(row['mean_sleep'], row['mean_iqr'], s=size, color=c, alpha=0.82,
+        xval = row[x_map[x_choice]]
+        yval = row[y_map[y_choice]]
+        ax.scatter(xval, yval, s=size, color=c, alpha=0.82,
                    edgecolor=WHITE, linewidth=2.2, zorder=3)
-        ax.text(row['mean_sleep'], row['mean_iqr'], f"{row['N']/total:.0%}",
+        ax.text(xval, yval, f"{row['N']/total:.0%}",
                 ha='center', va='center', fontsize=11, color='white', fontweight='750', zorder=4)
-        ax.annotate(nm, (row['mean_sleep'], row['mean_iqr']),
+        ax.annotate(nm, (xval, yval),
                     xytext=(10, 6), textcoords='offset points', fontsize=9.5,
                     color=DGRAY, fontweight='650')
-    ax.axvline(7, color=AMBER, ls='--', lw=1.6, alpha=0.8)
-    ax.text(7.03, ax.get_ylim()[0] + 0.04, '7h reference', color=AMBER, fontsize=8.8, fontweight='650')
-    ax.set_xlabel('Mean sleep duration (hours)', fontsize=10, color=MGRAY)
-    ax.set_ylabel('Night-to-night variability, IQR (hours)', fontsize=10, color=MGRAY)
+    if x_choice == "Sleep duration":
+        ax.axvline(7, color=AMBER, ls='--', lw=1.6, alpha=0.8)
+        ax.text(7.03, ax.get_ylim()[0] + 0.04, '7h reference', color=AMBER, fontsize=8.8, fontweight='650')
+    ax.set_xlabel(x_choice, fontsize=10, color=MGRAY)
+    ax.set_ylabel(y_choice, fontsize=10, color=MGRAY)
     ax.set_title('Sleep phenotypes by duration, variability, and cohort share', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
     ax.xaxis.grid(True, color=LGRAY, lw=0.8)
     plt.tight_layout()
@@ -552,29 +585,42 @@ elif "Fairness" in page:
     st.markdown("Does the model perform equally across demographic groups?")
     st.divider()
 
-    target = st.radio("Target:", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
+    fcol1, fcol2 = st.columns([1, 1])
+    with fcol1:
+        target = st.radio("Target:", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
+    with fcol2:
+        fairness_view = st.radio("Chart view:", ["Deviation from average", "Raw R²"], horizontal=True)
     tkey = "mean_sleep_hrs" if "Duration" in target else "iqr_sleep_hrs"
     sub  = fair[fair.target == tkey].copy()
     overall = sub['R2'].mean()
     sub['delta'] = sub['R2'] - overall
-    sub = sub.sort_values('R2', ascending=False)
+    sort_metric = 'delta' if fairness_view == "Deviation from average" else 'R2'
+    sub = sub.sort_values(sort_metric, ascending=False)
 
     colors = [RED if d < -0.005 else GREEN if d > 0.005 else LGRAY for d in sub['delta']]
     fig, ax = chart_fig(11.5, 6)
-    bars = ax.barh(sub['subgroup'], sub['delta'], color=colors, alpha=0.9, edgecolor=WHITE, height=0.58)
-    ax.axvline(0, color=DGRAY, lw=1.8, alpha=0.65)
-    for bar, val, r2 in zip(bars, sub['delta'], sub['R2']):
+    plot_values = sub['delta'] if fairness_view == "Deviation from average" else sub['R2']
+    bars = ax.barh(sub['subgroup'], plot_values, color=colors, alpha=0.9, edgecolor=WHITE, height=0.58)
+    if fairness_view == "Deviation from average":
+        ax.axvline(0, color=DGRAY, lw=1.8, alpha=0.65)
+    else:
+        ax.axvline(overall, color=AMBER, lw=1.8, ls='--', alpha=0.85)
+    for bar, val, delta, r2 in zip(bars, plot_values, sub['delta'], sub['R2']):
         ha = 'left' if val >= 0 else 'right'
         offset = 0.002 if val >= 0 else -0.002
-        ax.text(val + offset, bar.get_y() + bar.get_height()/2, f"{val:+.3f}  R² {r2:.3f}",
+        label = f"{delta:+.3f}  R² {r2:.3f}" if fairness_view == "Deviation from average" else f"R² {r2:.3f}  ({delta:+.3f})"
+        ax.text(val + offset, bar.get_y() + bar.get_height()/2, label,
                 va='center', ha=ha, fontsize=9.3, color=DGRAY)
-    ax.set_xlabel('R² difference from subgroup average', fontsize=10, color=MGRAY)
-    ax.set_title(f'Fairness Deviation — {target}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
+    ax.set_xlabel('R² difference from subgroup average' if fairness_view == "Deviation from average" else "R²", fontsize=10, color=MGRAY)
+    ax.set_title(f'Fairness {fairness_view} — {target}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
     ax.xaxis.grid(True, color=LGRAY, lw=0.8); ax.yaxis.grid(False)
     ax.legend(handles=[mpatches.Patch(color=RED,label='Below avg (gap)'),
                         mpatches.Patch(color=GREEN,label='Above avg')], fontsize=9)
-    lim = max(abs(sub['delta'].min()), abs(sub['delta'].max())) * 1.35
-    ax.set_xlim(-lim, lim)
+    if fairness_view == "Deviation from average":
+        lim = max(abs(sub['delta'].min()), abs(sub['delta'].max())) * 1.35
+        ax.set_xlim(-lim, lim)
+    else:
+        ax.set_xlim(0, sub['R2'].max() * 1.25)
     plt.tight_layout()
     st.pyplot(fig, use_container_width=True); plt.close()
 
@@ -603,12 +649,19 @@ elif "Importance" in page:
     st.markdown("Random Forest feature importances trained on the full cohort (mean decrease in impurity).")
     st.divider()
 
-    target = st.radio("Target:", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
+    icol1, icol2, icol3 = st.columns([1, 1, 1])
+    with icol1:
+        target = st.radio("Target:", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
+    with icol2:
+        top_n = st.slider("Features shown:", 5, 18, 12)
+    with icol3:
+        show_table = st.toggle("Show full table", value=True)
     imp = clean_imp(imp_d if "Duration" in target else imp_c)
     imp = imp[imp > 0.005]
+    imp_chart = imp.head(top_n)
     tlbl = "Sleep Duration" if "Duration" in target else "Sleep Consistency (IQR)"
 
-    simp = imp.sort_values()
+    simp = imp_chart.sort_values()
     colors = []
     for i in simp.index:
         if i == simp.index[-1]:
@@ -655,8 +708,9 @@ elif "Importance" in page:
             box("📌 <b>Step variability</b> (0.109): people with inconsistent daily activity have inconsistent sleep.", "blue")
             box("📌 <b>Self-rated health</b> (0.097): perceived wellbeing is more tied to sleep regularity than to sleep duration.", "green")
 
-    st.divider()
-    section("Full Table")
-    ft = imp.reset_index(); ft.columns = ['Feature','Importance']
-    ft['Importance'] = ft['Importance'].round(4)
-    mini_table(ft)
+    if show_table:
+        st.divider()
+        section("Full Table")
+        ft = imp.reset_index(); ft.columns = ['Feature','Importance']
+        ft['Importance'] = ft['Importance'].round(4)
+        mini_table(ft)

@@ -1,6 +1,6 @@
 # Predicting and Phenotyping Sleep Health in a Diverse National Cohort: Evidence from the *All of Us* Research Program
 
-**Sophia Boettcher**  
+**Sophia Boettcher, Auston Balwinski, Hunter Belous, Jared Fox**  
 School of Information, University of Michigan  
 SIADS 699 Capstone Project — July 2026
 
