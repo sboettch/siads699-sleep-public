@@ -1,0 +1,5 @@
+cluster_label,N,mean_age,pct_female,mean_bmi,mean_steps,mean_sleep,mean_iqr,pct_short
+Chronic Short & Variable,14479,53.53,0.72,31.55,6047.21,6.68,2.16,0.36
+Consistent Good Sleepers,25176,58.26,0.68,28.06,7549.15,7.12,1.21,0.14
+Short but Regular,14467,59.25,0.55,31.19,7058.2,5.92,1.43,0.55
+Variable Long Sleepers,5635,53.25,0.74,30.62,5278.45,7.88,2.38,0.16

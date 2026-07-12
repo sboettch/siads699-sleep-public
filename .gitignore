@@ -13,6 +13,7 @@ outputs/raw/
 !synthetic_data/*.csv
 !outputs/figures/
 !outputs/summaries/
+!dashboard/*.csv
 
 # Python
 __pycache__/
