@@ -356,35 +356,73 @@ p, li, label {
 .read-note b {
     color: #FFFFFF;
 }
-.plain-list {
+.takeaway {
+    background: rgba(92,200,161,0.11);
+    border: 1px solid rgba(92,200,161,0.26);
+    border-left: 5px solid #5CC8A1;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 12px 0 18px;
+    color: #EAF7F1;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+.takeaway b {
+    color: #FFFFFF;
+}
+.profile-table {
     display: grid;
-    grid-template-columns: repeat(3, minmax(160px, 1fr));
-    gap: 12px;
+    gap: 8px;
     margin: 12px 0 18px;
 }
-.plain-card {
-    background: rgba(15,27,42,0.82);
-    border: 1px solid rgba(148,163,184,0.16);
+.profile-row {
+    display: grid;
+    grid-template-columns: 190px repeat(6, minmax(110px, 1fr));
+    gap: 8px;
+    align-items: stretch;
+}
+.profile-head,
+.profile-name,
+.profile-cell {
     border-radius: 8px;
-    padding: 13px 14px;
+    border: 1px solid rgba(148,163,184,0.16);
+    padding: 10px 11px;
 }
-.plain-card b {
+.profile-head {
+    color: #94A3B8;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: rgba(15,23,42,0.72);
+}
+.profile-name {
     color: #F8FAFC;
+    font-weight: 700;
+    background: rgba(15,27,42,0.88);
+}
+.profile-cell {
+    background: rgba(15,27,42,0.78);
+}
+.profile-cell b {
     display: block;
-    margin-bottom: 4px;
+    color: #F8FAFC;
+    font-size: 0.9rem;
 }
-.plain-card span {
+.profile-cell span {
+    display: block;
     color: #CBD5E1;
-    font-size: 0.86rem;
-    line-height: 1.4;
+    font-size: 0.75rem;
+    margin-top: 3px;
 }
+.profile-cell.high { border-left: 5px solid #E9B44C; }
+.profile-cell.low { border-left: 5px solid #4FA3D9; }
+.profile-cell.mid { border-left: 5px solid #64748B; }
 
 @media (max-width: 1100px) {
     .kpi-row { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
     .insight-grid { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
     .cl-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
     .clinical-hero { grid-template-columns: 1fr; }
-    .plain-list { grid-template-columns: 1fr; }
+    .profile-row { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
     .block-container {
@@ -419,12 +457,8 @@ def section(label):
 def read_note(text):
     st.markdown(f'<div class="read-note">{text}</div>', unsafe_allow_html=True)
 
-def plain_cards(cards):
-    html = '<div class="plain-list">'
-    for title, body in cards:
-        html += f'<div class="plain-card"><b>{title}</b><span>{body}</span></div>'
-    html += '</div>'
-    st.markdown(html, unsafe_allow_html=True)
+def takeaway(text):
+    st.markdown(f'<div class="takeaway">{text}</div>', unsafe_allow_html=True)
 
 def insight_cards(cards):
     html = '<div class="insight-grid">'
@@ -459,6 +493,33 @@ def mini_table(df, formats=None, rank=False):
         f'<div class="table-card"><table class="mini-table"><thead><tr>{headers}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>',
         unsafe_allow_html=True,
     )
+
+def profile_table(raw, z, features, labels):
+    header = '<div class="profile-row"><div class="profile-head">Group</div>'
+    header += ''.join(f'<div class="profile-head">{escape(label)}</div>' for label in labels)
+    header += '</div>'
+    rows = [header]
+    for group in z.index:
+        row_html = f'<div class="profile-row"><div class="profile-name">{escape(str(group))}</div>'
+        for feat, label in zip(features, labels):
+            val = raw.loc[group, feat]
+            score = z.loc[group, feat]
+            if score > 0.75:
+                status, cls = "Above avg", "high"
+            elif score < -0.75:
+                status, cls = "Below avg", "low"
+            else:
+                status, cls = "Typical", "mid"
+            if feat == 'pct_short':
+                shown = f"{val:.0%}"
+            elif feat == 'mean_steps':
+                shown = f"{val:,.0f}"
+            else:
+                shown = f"{val:.1f}"
+            row_html += f'<div class="profile-cell {cls}"><b>{escape(shown)}</b><span>{status}</span></div>'
+        row_html += '</div>'
+        rows.append(row_html)
+    st.markdown(f'<div class="profile-table">{"".join(rows)}</div>', unsafe_allow_html=True)
 
 def chart_fig(w=10, h=5):
     fig, ax = plt.subplots(figsize=(w, h), facecolor=WHITE)
@@ -504,22 +565,22 @@ def clean_imp(df):
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 🌙 Sleep & Lifestyle")
+    st.markdown("## Sleep & Lifestyle")
     st.markdown("**All of Us Research Program**")
     st.markdown("SIADS 699 &nbsp;·&nbsp; Team Sleep Deprived &nbsp;·&nbsp; 2026", unsafe_allow_html=True)
     st.caption("Sophia Boettcher · Auston Balwinski\nHunter Belous · Jared Fox")
     st.divider()
     page = st.radio("Dashboard section", [
-        "📊  Overview",
-        "🤖  Models",
-        "👥  Sleep Phenotypes",
-        "⚖️  Fairness",
-        "🔍  Feature Importance",
+        "Overview",
+        "Models",
+        "Sleep Phenotypes",
+        "Fairness",
+        "Feature Importance",
     ], label_visibility="collapsed")
     st.divider()
     st.markdown("**Cohort:** 59,757 participants  \n**Source:** All of Us CDR v9  \n**Device:** Fitbit")
     st.divider()
-    st.caption("🔒 Aggregate statistics only.\nNo individual-level data exported from Workbench.")
+    st.caption("Aggregate statistics only.\nNo individual-level data exported from Workbench.")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # OVERVIEW
@@ -581,11 +642,11 @@ if "Overview" in page:
 
     with col1:
         section("Key Findings")
-        box("📈 <b>HistGBM achieves R²=0.099 (duration) and R²=0.184 (consistency)</b> — a +16% improvement over baseline from adding resting HR, SES, and self-rated health.", "blue")
-        box("🔑 <b>Age × daily steps interaction explains 44% of variance in sleep consistency</b> — the single dominant predictor across all models.", "blue")
-        box("👥 <b>Four sleep phenotypes identified:</b> 42% Consistent Good Sleepers, 24% Chronic Short & Variable, 24% Short but Regular, 9% Variable Long Sleepers.", "green")
-        box("⚖️ <b>40% fairness gap:</b> Model accuracy for UBR participants is substantially lower than for White participants — a structural limitation requiring disclosure.", "red")
-        box("💤 <b>Sleep consistency is more predictable than duration</b> across all models — lifestyle shapes regularity more than length.", "blue")
+        box("<b>HistGBM achieves R²=0.099 for duration and R²=0.184 for consistency</b> — a +16% improvement over baseline from adding resting HR, SES, and self-rated health.", "blue")
+        box("<b>Age × daily steps explains 44% of sleep-consistency importance</b> — the dominant signal across models.", "blue")
+        box("<b>Four sleep groups identified:</b> 42% Consistent Good Sleepers, 24% Chronic Short & Variable, 24% Short but Regular, 9% Variable Long Sleepers.", "green")
+        box("<b>40% fairness gap:</b> model accuracy for UBR participants is substantially lower than for White participants.", "red")
+        box("<b>Sleep consistency is more predictable than duration</b> across all models.", "blue")
 
     with col2:
         section("Research Questions")
@@ -620,23 +681,19 @@ elif "Models" in page:
 
     ctrl1, ctrl2 = st.columns([1, 1])
     with ctrl1:
-        target = st.radio("Prediction target:", ["Sleep Duration", "Sleep Consistency (IQR)"], horizontal=True)
+        target = st.radio("What should the model predict?", ["Sleep Duration", "Sleep Consistency (IQR)"], horizontal=True)
     with ctrl2:
-        model_metric = st.radio("Chart metric:", ["R² lift", "MAE change"], horizontal=True)
+        model_metric = st.radio("How should accuracy be shown?", ["Model fit", "Prediction error"], horizontal=True)
     tkey  = "mean_sleep_hrs" if "Duration" in target else "iqr_sleep_hrs"
     tlbl  = "Sleep Duration" if "Duration" in target else "Sleep Consistency"
 
     p1 = cv1[cv1.target == tkey][['model','R2','MAE']].copy()
     p2 = cv2[cv2.target == tkey][['model','R2','MAE']].copy()
     best_r2 = p2.sort_values('R2', ascending=False).iloc[0]
-    plain_cards([
-        ("Best current model", f"{best_r2['model']} explains the most variation for this outcome."),
-        ("How to read the chart", "Dots farther right mean better model fit for R², or more error for MAE."),
-        ("Bottom line", "Sleep consistency is easier to predict than sleep duration in this cohort."),
-    ])
+    takeaway(f"<b>Bottom line:</b> {best_r2['model']} is the strongest model here. Across outcomes, sleep consistency is easier to predict than sleep duration.")
 
     all_m = list(p1['model'].unique()) + [m for m in p2['model'].unique() if m not in p1['model'].values]
-    metric_col = 'R2' if model_metric == "R² lift" else 'MAE'
+    metric_col = 'R2' if model_metric == "Model fit" else 'MAE'
     metric_label = 'Model fit score (higher is better)' if metric_col == 'R2' else 'Average prediction error in hours (lower is better)'
     p1d = p1.set_index('model')[metric_col].reindex(all_m).fillna(0)
     p2d = p2.set_index('model')[metric_col].reindex(all_m).fillna(0)
@@ -704,11 +761,11 @@ elif "Phenotypes" in page:
     total = cl['N'].sum()
     pcol1, pcol2, pcol3 = st.columns([1, 1, 1])
     with pcol1:
-        sort_choice = st.selectbox("Sort phenotype cards by:", ["Sleep duration", "Cohort share", "Variability", "Short-night rate"])
+        sort_choice = st.selectbox("How should groups be sorted?", ["Sleep duration", "Cohort share", "Variability", "Short-night rate"])
     with pcol2:
-        x_choice = st.selectbox("Map x-axis:", ["Sleep duration", "Daily steps", "Age", "BMI"])
+        x_choice = st.selectbox("What should define the horizontal position?", ["Sleep duration", "Daily steps", "Age", "BMI"])
     with pcol3:
-        y_choice = st.selectbox("Map y-axis:", ["Variability", "Short-night rate", "Daily steps", "BMI"])
+        y_choice = st.selectbox("What should define the vertical position?", ["Variability", "Short-night rate", "Daily steps", "BMI"])
 
     sort_map = {
         "Sleep duration": ("mean_sleep", False),
@@ -719,11 +776,7 @@ elif "Phenotypes" in page:
     x_map = {"Sleep duration": "mean_sleep", "Daily steps": "mean_steps", "Age": "mean_age", "BMI": "mean_bmi"}
     y_map = {"Variability": "mean_iqr", "Short-night rate": "pct_short", "Daily steps": "mean_steps", "BMI": "mean_bmi"}
     sort_col, ascending = sort_map[sort_choice]
-    plain_cards([
-        ("Largest group", "Consistent Good Sleepers make up about 42% of the cohort."),
-        ("Higher-risk pattern", "Chronic Short & Variable combines short sleep with irregular sleep timing."),
-        ("Map reading tip", "Bubble size shows how common each group is; position shows the selected traits."),
-    ])
+    takeaway("<b>Bottom line:</b> the largest group has consistent, adequate sleep, but nearly half the cohort falls into a short-sleep or variable-sleep pattern.")
     cards_html = '<div class="cl-grid">'
     for _, row in cl.sort_values(sort_col, ascending=ascending).iterrows():
         nm = row['cluster_label']; c = CC.get(nm, BLUE); ic = CI.get(nm, '•')
@@ -734,11 +787,11 @@ elif "Phenotypes" in page:
             <p class="cl-n">{row['N']:,}</p>
             <p class="cl-pct">{row['N']/total*100:.0f}% of cohort</p>
             <hr class="cl-divider">
-            <p class="cl-stat">😴 {row['mean_sleep']:.2f} hrs avg</p>
-            <p class="cl-stat">📊 IQR {row['mean_iqr']:.2f} hrs variability</p>
-            <p class="cl-stat">🌙 {row['pct_short']:.0%} short nights</p>
-            <p class="cl-stat">👟 {row['mean_steps']:,.0f} steps/day</p>
-            <p class="cl-stat">📅 Age {row['mean_age']:.0f} · BMI {row['mean_bmi']:.1f}</p>
+            <p class="cl-stat">Sleep: {row['mean_sleep']:.2f} hrs avg</p>
+            <p class="cl-stat">Variability: IQR {row['mean_iqr']:.2f} hrs</p>
+            <p class="cl-stat">Short nights: {row['pct_short']:.0%}</p>
+            <p class="cl-stat">Activity: {row['mean_steps']:,.0f} steps/day</p>
+            <p class="cl-stat">Profile: age {row['mean_age']:.0f} · BMI {row['mean_bmi']:.1f}</p>
         </div>"""
     cards_html += '</div>'
     st.markdown(cards_html, unsafe_allow_html=True)
@@ -777,22 +830,8 @@ elif "Phenotypes" in page:
     ORD = ['Consistent Good Sleepers','Short but Regular','Chronic Short & Variable','Variable Long Sleepers']
     zn  = zn.reindex([r for r in ORD if r in zn.index])
 
-    fig, ax = plt.subplots(figsize=(11, 3.5), facecolor=WHITE); ax.set_facecolor(WHITE)
-    im = ax.imshow(zn.values, cmap='PuOr_r', aspect='auto', vmin=-2, vmax=2)
-    ax.set_xticks(range(len(fl))); ax.set_xticklabels(fl, fontsize=10, color=DGRAY)
-    ax.set_yticks(range(len(zn))); ax.set_yticklabels(zn.index, fontsize=10, color=DGRAY)
-    ax.tick_params(left=False, bottom=False)
-    for i in range(len(zn)):
-        for j, feat in enumerate(fc):
-            raw = z.loc[zn.index[i], feat]; zv = zn.values[i, j]
-            fmt = f'{raw:.0%}' if feat=='pct_short' else (f'{raw:,.0f}' if feat=='mean_steps' else f'{raw:.1f}')
-            ax.text(j, i, fmt, ha='center', va='center', fontsize=9.5,
-                    color='white' if abs(zv)>1.2 else DGRAY, fontweight='600')
-    plt.colorbar(im, ax=ax, label='below avg  ←  group value  →  above avg', fraction=0.02, pad=0.02)
-    ax.set_title('What is unusually high or low for each group?', fontsize=11, fontweight='bold', color=DGRAY, pad=10)
-    plt.tight_layout()
-    st.pyplot(fig, use_container_width=True); plt.close()
-    read_note("<b>How to read this:</b> each cell shows the actual group value. Color only adds emphasis: one side means below the cohort average, the other means above average.")
+    profile_table(z, zn, fc, fl)
+    read_note("<b>How to read this:</b> each cell shows the actual group value plus a plain comparison with the cohort average. This avoids needing to interpret a color scale.")
 
     box("⚠️ <b>Short but Regular</b> (24%): 55% of nights average under 6 hours — severe chronic deprivation with a consistent schedule. High steps suggest trading sleep for activity.", "red")
     box("💡 <b>Variable Long Sleepers</b> (9%): Highest sleep duration but lowest step count and extreme night-to-night variability. Likely shift workers, retirees, or those with irregular schedules.", "blue")
@@ -807,9 +846,9 @@ elif "Fairness" in page:
 
     fcol1, fcol2 = st.columns([1, 1])
     with fcol1:
-        target = st.radio("Target:", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
+        target = st.radio("Which outcome should be checked?", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
     with fcol2:
-        fairness_view = st.radio("Chart view:", ["Deviation from average", "Raw R²"], horizontal=True)
+        fairness_view = st.radio("How should differences be shown?", ["Deviation from average", "Raw model fit"], horizontal=True)
     tkey = "mean_sleep_hrs" if "Duration" in target else "iqr_sleep_hrs"
     sub  = fair[fair.target == tkey].copy()
     overall = sub['R2'].mean()
@@ -819,11 +858,7 @@ elif "Fairness" in page:
     ubr = sub[sub.subgroup=='UBR']['R2'].values[0]
     wht = sub[sub.subgroup=='White']['R2'].values[0]
     gap = (wht - ubr) / wht * 100
-    plain_cards([
-        ("What this checks", "Whether the model performs similarly for different groups."),
-        ("Main equity signal", f"UBR participants have about a {gap:.0f}% lower duration model fit than White participants."),
-        ("How to read it", "Bars left of zero mean lower-than-average model performance."),
-    ])
+    takeaway(f"<b>Bottom line:</b> model fit is not even across groups. For sleep duration, UBR participants have about a {gap:.0f}% lower model fit than White participants.")
 
     colors = [RED if d < -0.005 else GREEN if d > 0.005 else LGRAY for d in sub['delta']]
     fig, ax = chart_fig(11.5, 6)
@@ -836,7 +871,7 @@ elif "Fairness" in page:
     for bar, val, delta, r2 in zip(bars, plot_values, sub['delta'], sub['R2']):
         ha = 'left' if val >= 0 else 'right'
         offset = 0.002 if val >= 0 else -0.002
-        label = f"{delta:+.3f}  R² {r2:.3f}" if fairness_view == "Deviation from average" else f"R² {r2:.3f}  ({delta:+.3f})"
+        label = f"{delta:+.3f}  fit {r2:.3f}" if fairness_view == "Deviation from average" else f"fit {r2:.3f}  ({delta:+.3f})"
         ax.text(val + offset, bar.get_y() + bar.get_height()/2, label,
                 va='center', ha=ha, fontsize=9.3, color=DGRAY)
     ax.set_xlabel('Difference from average model performance' if fairness_view == "Deviation from average" else "Model fit score", fontsize=10, color=MGRAY)
@@ -877,20 +912,16 @@ elif "Importance" in page:
 
     icol1, icol2, icol3 = st.columns([1, 1, 1])
     with icol1:
-        target = st.radio("Target:", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
+        target = st.radio("Which outcome should be explained?", ["Sleep Duration", "Sleep Consistency"], horizontal=True)
     with icol2:
-        top_n = st.slider("Features shown:", 5, 18, 12)
+        top_n = st.slider("How many factors should be shown?", 5, 18, 12)
     with icol3:
         show_table = st.toggle("Show full table", value=True)
     imp = clean_imp(imp_d if "Duration" in target else imp_c)
     imp = imp[imp > 0.005]
     imp_chart = imp.head(top_n)
     tlbl = "Sleep Duration" if "Duration" in target else "Sleep Consistency (IQR)"
-    plain_cards([
-        ("Top signal", f"{imp.index[0]} is the highest-ranked input for this outcome."),
-        ("Not causation", "A high score means the model used this factor often, not that it causes sleep changes."),
-        ("Useful reading", "Longer bars are more influential within this model."),
-    ])
+    takeaway(f"<b>Bottom line:</b> {imp.index[0]} is the strongest prediction signal for this outcome. These factors help prediction; they do not prove cause.")
 
     simp = imp_chart.sort_values()
     colors = []
