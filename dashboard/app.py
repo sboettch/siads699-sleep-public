@@ -6,11 +6,16 @@ Streamlit Dashboard  |  Team Sleep Deprived  |  2026
 import streamlit as st
 import pandas as pd
 import numpy as np
+import os
+import tempfile
+from html import escape
+
+os.environ.setdefault("MPLCONFIGDIR", os.path.join(tempfile.gettempdir(), "matplotlib"))
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import os
 
 st.set_page_config(
     page_title="Sleep & Lifestyle — All of Us",
@@ -25,15 +30,40 @@ WHITE = '#FFFFFF'
 DGRAY = '#1a1a2e'
 MGRAY = '#6c757d'
 LGRAY = '#dee2e6'
+VGRAY = '#f1f3f5'
 RED   = '#E05C3A'
 BLUE  = '#3B7EC8'
 GREEN = '#5AA469'
 AMBER = '#E8A838'
+PURPLE = '#7C5CC4'
 
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
+
+[data-testid="stAppViewContainer"] {
+    background: #F8F9FA !important;
+}
+[data-testid="stHeader"] {
+    background: rgba(248,249,250,0.85) !important;
+}
+.block-container {
+    max-width: 1240px;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+h1, h2, h3, p, li, label, span, div {
+    letter-spacing: 0 !important;
+}
+h1 {
+    color: #1a1a2e !important;
+    font-weight: 750 !important;
+    line-height: 1.08 !important;
+}
+p, li, label {
+    color: #2f3440;
+}
 
 /* Sidebar */
 [data-testid="stSidebar"] {
@@ -42,25 +72,73 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
 [data-testid="stSidebar"] * { color: #e8eaf6 !important; }
 [data-testid="stSidebar"] .stRadio label { color: #e8eaf6 !important; }
 [data-testid="stSidebar"] hr { border-color: rgba(255,255,255,0.15) !important; }
+[data-testid="stSidebar"] [role="radiogroup"] label {
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin: 2px 0;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover {
+    background: rgba(255,255,255,0.08);
+}
 
 /* Metric cards */
-.kpi-row { display: flex; gap: 14px; margin: 16px 0; }
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(142px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+}
 .kpi-card {
-    flex: 1; background: white; border-radius: 14px;
+    background: white; border-radius: 8px;
     padding: 22px 18px; text-align: center;
     box-shadow: 0 1px 6px rgba(0,0,0,0.07);
-    border-top: 4px solid #3B7EC8;
+    border-top: 4px solid var(--accent, #3B7EC8);
     transition: box-shadow 0.2s;
 }
 .kpi-card:hover { box-shadow: 0 4px 18px rgba(59,126,200,0.18); }
-.kpi-val   { font-size: 2rem; font-weight: 700; color: #3B7EC8; margin: 0; line-height: 1; }
+.kpi-val   { font-size: clamp(1.45rem, 2.6vw, 2rem); font-weight: 750; color: var(--accent, #3B7EC8); margin: 0; line-height: 1; }
 .kpi-label { font-size: 0.78rem; font-weight: 600; color: #6c757d; margin: 6px 0 2px;
              text-transform: uppercase; letter-spacing: 0.06em; }
 .kpi-sub   { font-size: 0.75rem; color: #adb5bd; margin: 0; }
 
+/* Insight chips */
+.insight-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(170px, 1fr));
+    gap: 12px;
+    margin: 16px 0 8px;
+}
+.insight {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-left: 5px solid var(--accent, #3B7EC8);
+    border-radius: 8px;
+    padding: 14px 16px;
+    min-height: 92px;
+}
+.insight-val {
+    color: var(--accent, #3B7EC8);
+    font-size: 1.45rem;
+    font-weight: 750;
+    line-height: 1;
+    margin: 0 0 7px;
+}
+.insight-label {
+    color: #1a1a2e;
+    font-size: 0.9rem;
+    font-weight: 650;
+    margin: 0 0 4px;
+}
+.insight-sub {
+    color: #6c757d;
+    font-size: 0.78rem;
+    margin: 0;
+    line-height: 1.35;
+}
+
 /* Callout boxes */
 .box {
-    border-radius: 10px; padding: 14px 18px; margin: 10px 0;
+    border-radius: 8px; padding: 14px 18px; margin: 10px 0;
     font-size: 0.92rem; line-height: 1.55; color: #1a1a2e;
 }
 .box-blue  { background: #EEF4FF; border-left: 4px solid #3B7EC8; }
@@ -69,9 +147,14 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
 .box b     { color: #1a1a2e; }
 
 /* Cluster cards */
-.cl-grid { display: flex; gap: 14px; margin: 16px 0; }
+.cl-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+}
 .cl-card {
-    flex: 1; background: white; border-radius: 14px; padding: 18px 16px;
+    background: white; border-radius: 8px; padding: 18px 16px;
     box-shadow: 0 1px 6px rgba(0,0,0,0.07);
     transition: transform 0.15s, box-shadow 0.15s;
 }
@@ -88,6 +171,72 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
     font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
     text-transform: uppercase; color: #6c757d; margin: 24px 0 8px;
 }
+
+/* Compact tables rendered as responsive cards */
+.table-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow-x: auto;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.04);
+}
+.mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 360px;
+}
+.mini-table th {
+    background: #f8f9fa;
+    color: #6c757d;
+    font-size: 0.73rem;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e9ecef;
+}
+.mini-table td {
+    color: #1a1a2e;
+    font-size: 0.86rem;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f3f5;
+    white-space: nowrap;
+}
+.mini-table tr:last-child td {
+    border-bottom: 0;
+}
+.rank-pill {
+    display: inline-block;
+    min-width: 28px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #eef4ff;
+    color: #3B7EC8;
+    font-weight: 700;
+    text-align: center;
+}
+
+@media (max-width: 1100px) {
+    .kpi-row { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+    .insight-grid { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
+    .cl-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+}
+@media (max-width: 760px) {
+    .block-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 1.25rem;
+    }
+    h1 { font-size: 2rem !important; }
+    .kpi-row, .insight-grid, .cl-grid {
+        grid-template-columns: 1fr;
+    }
+    .kpi-card, .insight, .cl-card {
+        padding: 16px 14px;
+    }
+    .kpi-card {
+        text-align: left;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -98,13 +247,50 @@ def box(text, kind='blue'):
 def section(label):
     st.markdown(f'<div class="section-label">{label}</div>', unsafe_allow_html=True)
 
+def insight_cards(cards):
+    html = '<div class="insight-grid">'
+    for card in cards:
+        html += f"""
+        <div class="insight" style="--accent:{card['color']}">
+            <p class="insight-val">{card['value']}</p>
+            <p class="insight-label">{card['label']}</p>
+            <p class="insight-sub">{card['sub']}</p>
+        </div>"""
+    html += '</div>'
+    st.markdown(html, unsafe_allow_html=True)
+
+def mini_table(df, formats=None, rank=False):
+    formats = formats or {}
+    headers = ''.join(f'<th>{escape(str(c))}</th>' for c in df.columns)
+    rows = []
+    for ridx, (_, row) in enumerate(df.iterrows(), start=1):
+        cells = []
+        for c in df.columns:
+            val = row[c]
+            if c in formats:
+                val = formats[c](val)
+            elif isinstance(val, float):
+                val = f"{val:.3f}"
+            cell = f'<span class="rank-pill">{ridx}</span>' if rank and c == df.columns[0] else escape(str(val))
+            if rank and c == df.columns[0]:
+                cell += f" {escape(str(row[c]))}"
+            cells.append(f'<td>{cell}</td>')
+        rows.append(f"<tr>{''.join(cells)}</tr>")
+    st.markdown(
+        f'<div class="table-card"><table class="mini-table"><thead><tr>{headers}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>',
+        unsafe_allow_html=True,
+    )
+
 def chart_fig(w=10, h=5):
     fig, ax = plt.subplots(figsize=(w, h), facecolor=WHITE)
     ax.set_facecolor(WHITE)
-    for sp in ['top', 'right']: ax.spines[sp].set_visible(False)
-    ax.spines['left'].set_color(LGRAY); ax.spines['bottom'].set_color(LGRAY)
+    for sp in ['top', 'right']:
+        ax.spines[sp].set_visible(False)
+    ax.spines['left'].set_color(LGRAY)
+    ax.spines['bottom'].set_color(LGRAY)
     ax.tick_params(colors=MGRAY, labelsize=9.5)
-    ax.yaxis.grid(True, color=LGRAY, lw=0.8, zorder=0); ax.set_axisbelow(True)
+    ax.yaxis.grid(True, color=LGRAY, lw=0.8, zorder=0)
+    ax.set_axisbelow(True)
     return fig, ax
 
 # ── Data ──────────────────────────────────────────────────────────────────────
@@ -143,7 +329,7 @@ with st.sidebar:
     st.markdown("**All of Us Research Program**")
     st.markdown("SIADS 699 &nbsp;·&nbsp; Team Sleep Deprived &nbsp;·&nbsp; 2026", unsafe_allow_html=True)
     st.divider()
-    page = st.radio("", [
+    page = st.radio("Dashboard section", [
         "📊  Overview",
         "🤖  Models",
         "👥  Sleep Phenotypes",
@@ -165,12 +351,19 @@ if "Overview" in page:
 
     st.markdown("""
     <div class="kpi-row">
-      <div class="kpi-card"><p class="kpi-val">59,757</p><p class="kpi-label">Participants</p><p class="kpi-sub">Fitbit wearers, AoU CDR v9</p></div>
-      <div class="kpi-card"><p class="kpi-val">6.79 hrs</p><p class="kpi-label">Avg Sleep Duration</p><p class="kpi-sub">Below 7h recommendation</p></div>
-      <div class="kpi-card"><p class="kpi-val">30%</p><p class="kpi-label">Short Sleep Nights</p><p class="kpi-sub">< 6 hrs avg per person</p></div>
-      <div class="kpi-card"><p class="kpi-val">R²=0.184</p><p class="kpi-label">Best Consistency Model</p><p class="kpi-sub">HistGBM, Phase 2</p></div>
-      <div class="kpi-card"><p class="kpi-val">4</p><p class="kpi-label">Sleep Phenotypes</p><p class="kpi-sub">Identified via KMeans</p></div>
+      <div class="kpi-card" style="--accent:#3B7EC8"><p class="kpi-val">59,757</p><p class="kpi-label">Participants</p><p class="kpi-sub">Fitbit wearers, AoU CDR v9</p></div>
+      <div class="kpi-card" style="--accent:#E8A838"><p class="kpi-val">6.79 hrs</p><p class="kpi-label">Avg Sleep Duration</p><p class="kpi-sub">Below 7h recommendation</p></div>
+      <div class="kpi-card" style="--accent:#E05C3A"><p class="kpi-val">30%</p><p class="kpi-label">Short Sleep Nights</p><p class="kpi-sub">< 6 hrs avg per person</p></div>
+      <div class="kpi-card" style="--accent:#5AA469"><p class="kpi-val">R²=0.184</p><p class="kpi-label">Best Consistency Model</p><p class="kpi-sub">HistGBM, Phase 2</p></div>
+      <div class="kpi-card" style="--accent:#7C5CC4"><p class="kpi-val">4</p><p class="kpi-label">Sleep Phenotypes</p><p class="kpi-sub">Identified via KMeans</p></div>
     </div>""", unsafe_allow_html=True)
+
+    insight_cards([
+        {"value": "+16%", "label": "Model lift", "sub": "Best Phase 2 model vs. Phase 1 baseline", "color": GREEN},
+        {"value": "44%", "label": "Dominant signal", "sub": "Age × steps share of consistency importance", "color": BLUE},
+        {"value": "40%", "label": "Equity gap", "sub": "Lower duration R² for UBR vs. White participants", "color": RED},
+        {"value": "42%", "label": "Largest phenotype", "sub": "Consistent Good Sleepers", "color": PURPLE},
+    ])
 
     st.markdown(" ")
     col1, col2 = st.columns(2)
@@ -221,34 +414,42 @@ elif "Models" in page:
     p1 = cv1[cv1.target == tkey][['model','R2','MAE']].copy()
     p2 = cv2[cv2.target == tkey][['model','R2','MAE']].copy()
 
-    col1, col2 = st.columns([3, 2])
-    with col1:
-        all_m = list(p1['model'].unique()) + [m for m in p2['model'].unique() if m not in p1['model'].values]
-        x = np.arange(len(all_m)); w = 0.35
-        p1d = p1.set_index('model')['R2'].reindex(all_m).fillna(0)
-        p2d = p2.set_index('model')['R2'].reindex(all_m).fillna(0)
+    all_m = list(p1['model'].unique()) + [m for m in p2['model'].unique() if m not in p1['model'].values]
+    p1d = p1.set_index('model')['R2'].reindex(all_m).fillna(0)
+    p2d = p2.set_index('model')['R2'].reindex(all_m).fillna(0)
 
-        fig, ax = chart_fig(10, 5)
-        b1 = ax.bar(x - w/2, p1d, w, label='Phase 1 (baseline)', color=BLUE, alpha=0.6, edgecolor=WHITE)
-        b2 = ax.bar(x + w/2, p2d, w, label='Phase 2 (+ HR/SES/survey)', color=GREEN, alpha=0.9, edgecolor=WHITE)
-        for bar in list(b1) + list(b2):
-            h = bar.get_height()
-            if h > 0.005:
-                ax.text(bar.get_x() + bar.get_width()/2, h + 0.002, f'{h:.3f}',
-                        ha='center', va='bottom', fontsize=8, color=DGRAY)
-        ax.set_xticks(x); ax.set_xticklabels(all_m, fontsize=10)
-        ax.set_ylabel('R² (cross-validated)', fontsize=10, color=MGRAY)
-        ax.set_title(f'Model Accuracy — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=12)
-        ax.legend(fontsize=9)
-        ax.set_ylim(0, max(p1d.max(), p2d.max()) * 1.35)
-        plt.tight_layout()
-        st.pyplot(fig, use_container_width=True); plt.close()
+    y = np.arange(len(all_m))
+    best_model = p2d.idxmax()
+    fig, ax = chart_fig(11.5, 5.2)
+    ax.hlines(y, p1d, p2d, color=LGRAY, lw=9, zorder=1)
+    ax.scatter(p1d, y, s=145, color=BLUE, alpha=0.45, edgecolor=WHITE, linewidth=1.2, label='Phase 1')
+    ax.scatter(p2d, y, s=[230 if m == best_model else 165 for m in all_m],
+               color=[GREEN if m == best_model else AMBER for m in all_m],
+               alpha=0.95, edgecolor=WHITE, linewidth=1.4, label='Phase 2')
+    for i, m in enumerate(all_m):
+        delta = p2d[m] - p1d[m]
+        ax.text(max(p1d[m], p2d[m]) + 0.006, i, f"{p2d[m]:.3f}  ({delta:+.3f})",
+                va='center', fontsize=9.5, color=DGRAY, fontweight='700' if m == best_model else '500')
+    ax.set_yticks(y)
+    ax.set_yticklabels(all_m, fontsize=10, color=DGRAY)
+    ax.set_xlabel('R² (cross-validated)', fontsize=10, color=MGRAY)
+    ax.set_title(f'Model Accuracy Lift — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=12)
+    ax.xaxis.grid(True, color=LGRAY, lw=0.8)
+    ax.yaxis.grid(False)
+    ax.legend(fontsize=9)
+    ax.set_xlim(0, max(p1d.max(), p2d.max()) * 1.35)
+    for sp in ['left']:
+        ax.spines[sp].set_visible(False)
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True); plt.close()
 
-    with col2:
-        section("Phase 2 Results")
+    section("Phase 2 Results")
+    detail1, detail2 = st.columns([1, 1])
+    with detail1:
         d = p2.sort_values('R2', ascending=False).copy()
         d['R²'] = d['R2'].round(3); d['MAE (hrs)'] = d['MAE'].round(3)
-        st.dataframe(d[['model','R²','MAE (hrs)']], hide_index=True, use_container_width=True)
+        mini_table(d[['model','R²','MAE (hrs)']], rank=True)
+    with detail2:
         bm = d.iloc[0]
         box(f"Best: <b>{bm['model']}</b><br>R² = {bm['R2']:.3f} &nbsp;|&nbsp; MAE = {bm['MAE']*60:.0f} min", "green")
         box("Low R² is expected — sleep is driven by unmeasured factors: genetics, stress, medications. 10–18% explained variance aligns with the sleep epidemiology literature.", "blue")
@@ -294,6 +495,28 @@ elif "Phenotypes" in page:
     cards_html += '</div>'
     st.markdown(cards_html, unsafe_allow_html=True)
 
+    section("Phenotype Map")
+    fig, ax = chart_fig(10, 5)
+    for _, row in cl.iterrows():
+        nm = row['cluster_label']
+        c = CC.get(nm, BLUE)
+        size = 240 + (row['N'] / total) * 2300
+        ax.scatter(row['mean_sleep'], row['mean_iqr'], s=size, color=c, alpha=0.82,
+                   edgecolor=WHITE, linewidth=2.2, zorder=3)
+        ax.text(row['mean_sleep'], row['mean_iqr'], f"{row['N']/total:.0%}",
+                ha='center', va='center', fontsize=11, color='white', fontweight='750', zorder=4)
+        ax.annotate(nm, (row['mean_sleep'], row['mean_iqr']),
+                    xytext=(10, 6), textcoords='offset points', fontsize=9.5,
+                    color=DGRAY, fontweight='650')
+    ax.axvline(7, color=AMBER, ls='--', lw=1.6, alpha=0.8)
+    ax.text(7.03, ax.get_ylim()[0] + 0.04, '7h reference', color=AMBER, fontsize=8.8, fontweight='650')
+    ax.set_xlabel('Mean sleep duration (hours)', fontsize=10, color=MGRAY)
+    ax.set_ylabel('Night-to-night variability, IQR (hours)', fontsize=10, color=MGRAY)
+    ax.set_title('Sleep phenotypes by duration, variability, and cohort share', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
+    ax.xaxis.grid(True, color=LGRAY, lw=0.8)
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True); plt.close()
+
     section("Feature Heatmap")
     fc  = ['mean_sleep','mean_iqr','pct_short','mean_steps','mean_bmi','mean_age']
     fl  = ['Sleep Duration','Variability','Short Night %','Daily Steps','BMI','Age']
@@ -336,31 +559,34 @@ elif "Fairness" in page:
     sub['delta'] = sub['R2'] - overall
     sub = sub.sort_values('R2', ascending=False)
 
-    col1, col2 = st.columns([3, 2])
-    with col1:
-        colors = [RED if d < -0.005 else GREEN if d > 0.005 else LGRAY for d in sub['delta']]
-        fig, ax = chart_fig(9, 6)
-        bars = ax.barh(sub['subgroup'], sub['R2'], color=colors, alpha=0.88, edgecolor=WHITE, height=0.55)
-        ax.axvline(overall, color=DGRAY, lw=1.8, ls='--', alpha=0.6)
-        ax.text(overall + 0.001, ax.get_ylim()[1]*0.97, f'avg {overall:.3f}', fontsize=8.5, color=DGRAY)
-        for bar, val in zip(bars, sub['R2']):
-            ax.text(val + 0.001, bar.get_y() + bar.get_height()/2, f'{val:.3f}',
-                    va='center', fontsize=9.5, color=DGRAY)
-        ax.set_xlabel('R²', fontsize=10, color=MGRAY)
-        ax.set_title(f'Model R² by Subgroup — {target}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
-        ax.xaxis.grid(True, color=LGRAY, lw=0.8); ax.yaxis.grid(False)
-        ax.legend(handles=[mpatches.Patch(color=RED,label='Below avg (gap)'),
-                            mpatches.Patch(color=GREEN,label='Above avg')], fontsize=9)
-        plt.tight_layout()
-        st.pyplot(fig, use_container_width=True); plt.close()
+    colors = [RED if d < -0.005 else GREEN if d > 0.005 else LGRAY for d in sub['delta']]
+    fig, ax = chart_fig(11.5, 6)
+    bars = ax.barh(sub['subgroup'], sub['delta'], color=colors, alpha=0.9, edgecolor=WHITE, height=0.58)
+    ax.axvline(0, color=DGRAY, lw=1.8, alpha=0.65)
+    for bar, val, r2 in zip(bars, sub['delta'], sub['R2']):
+        ha = 'left' if val >= 0 else 'right'
+        offset = 0.002 if val >= 0 else -0.002
+        ax.text(val + offset, bar.get_y() + bar.get_height()/2, f"{val:+.3f}  R² {r2:.3f}",
+                va='center', ha=ha, fontsize=9.3, color=DGRAY)
+    ax.set_xlabel('R² difference from subgroup average', fontsize=10, color=MGRAY)
+    ax.set_title(f'Fairness Deviation — {target}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
+    ax.xaxis.grid(True, color=LGRAY, lw=0.8); ax.yaxis.grid(False)
+    ax.legend(handles=[mpatches.Patch(color=RED,label='Below avg (gap)'),
+                        mpatches.Patch(color=GREEN,label='Above avg')], fontsize=9)
+    lim = max(abs(sub['delta'].min()), abs(sub['delta'].max())) * 1.35
+    ax.set_xlim(-lim, lim)
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True); plt.close()
 
-    with col2:
-        section("Results by Subgroup")
+    section("Results by Subgroup")
+    detail1, detail2 = st.columns([1, 1])
+    with detail1:
         d = sub[['subgroup','N','R2']].copy()
         d['R²'] = d['R2'].round(3)
         d['vs avg'] = d['R2'].apply(lambda x: f"+{x-overall:.3f}" if x > overall else f"{x-overall:.3f}")
-        st.dataframe(d[['subgroup','N','R²','vs avg']], hide_index=True, use_container_width=True)
+        mini_table(d[['subgroup','N','R²','vs avg']], formats={'N': lambda x: f"{int(x):,}"})
 
+    with detail2:
         ubr = sub[sub.subgroup=='UBR']['R2'].values[0]
         wht = sub[sub.subgroup=='White']['R2'].values[0]
         gap = (wht - ubr) / wht * 100
@@ -382,31 +608,44 @@ elif "Importance" in page:
     imp = imp[imp > 0.005]
     tlbl = "Sleep Duration" if "Duration" in target else "Sleep Consistency (IQR)"
 
-    col1, col2 = st.columns([3, 2])
-    with col1:
-        simp = imp.sort_values()
-        colors = [RED if i == simp.index[-1] else AMBER if i == simp.index[-2] else BLUE
-                  for i in simp.index]
-        fig, ax = chart_fig(9, max(5, len(simp)*0.5))
-        bars = ax.barh(simp.index, simp.values, color=colors, alpha=0.88, edgecolor=WHITE, height=0.58)
-        for bar, val in zip(bars, simp.values):
-            ax.text(val + 0.003, bar.get_y() + bar.get_height()/2, f'{val:.3f}',
-                    va='center', fontsize=9, color=DGRAY)
-        ax.set_xlabel('Feature Importance (RF)', fontsize=10, color=MGRAY)
-        ax.set_title(f'Feature Importances — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
-        ax.xaxis.grid(True, color=LGRAY, lw=0.8); ax.yaxis.grid(False)
-        ax.tick_params(left=False)
-        for sp in ['left']: ax.spines[sp].set_visible(False)
-        ax.set_xlim(0, simp.max() * 1.25)
-        plt.tight_layout()
-        st.pyplot(fig, use_container_width=True); plt.close()
+    simp = imp.sort_values()
+    colors = []
+    for i in simp.index:
+        if i == simp.index[-1]:
+            colors.append(RED)
+        elif i in list(simp.index[-3:-1]):
+            colors.append(AMBER)
+        else:
+            colors.append(BLUE)
+    fig, ax = chart_fig(11.5, max(5.4, len(simp)*0.46))
+    bars = ax.barh(simp.index, simp.values, color=colors, alpha=0.88, edgecolor=WHITE, height=0.58)
+    for bar, val in zip(bars, simp.values):
+        ax.text(val + 0.003, bar.get_y() + bar.get_height()/2, f'{val:.3f}',
+                va='center', fontsize=9, color=DGRAY)
+    ax.set_xlabel('Feature Importance (RF)', fontsize=10, color=MGRAY)
+    ax.set_title(f'Feature Importances — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
+    ax.xaxis.grid(True, color=LGRAY, lw=0.8); ax.yaxis.grid(False)
+    ax.tick_params(left=False)
+    for sp in ['left']: ax.spines[sp].set_visible(False)
+    ax.set_xlim(0, simp.max() * 1.25)
+    ax.text(simp.max() * 1.23, len(simp) - 1, 'top driver', ha='right', va='center',
+            fontsize=8.8, color=RED, fontweight='700')
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True); plt.close()
 
-    with col2:
-        section("Top 5 Features")
+    section("Top 5 Features")
+    detail1, detail2 = st.columns([1, 1])
+    with detail1:
         t5 = imp.head(5).reset_index(); t5.columns = ['Feature','Importance']
         t5['Importance'] = t5['Importance'].round(3)
-        st.dataframe(t5, hide_index=True, use_container_width=True)
-        st.divider()
+        mini_table(t5, rank=True)
+
+    with detail2:
+        top3_share = imp.head(3).sum() / imp.sum() * 100
+        insight_cards([
+            {"value": f"{top3_share:.0f}%", "label": "Top-3 concentration", "sub": "Share of displayed importance in the first three signals", "color": RED if top3_share > 50 else BLUE},
+            {"value": f"{imp.iloc[0]/imp.iloc[1]:.1f}×", "label": "Lead feature ratio", "sub": "Top feature compared with the second-ranked feature", "color": AMBER},
+        ])
 
         if "Duration" in target:
             box("🔑 <b>BMI</b> (0.162) and <b>female gender</b> (0.150) dominate — biological factors drive sleep duration more than behavioral ones in this cohort.", "blue")
@@ -420,4 +659,4 @@ elif "Importance" in page:
     section("Full Table")
     ft = imp.reset_index(); ft.columns = ['Feature','Importance']
     ft['Importance'] = ft['Importance'].round(4)
-    st.dataframe(ft, hide_index=True, use_container_width=True)
+    mini_table(ft)
