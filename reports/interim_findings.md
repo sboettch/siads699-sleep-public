@@ -1,26 +1,18 @@
 # SIADS 699 — Interim Findings Report
-**Team Sleep Deprived | July 2026**
+**Team Sleep Deprived | July 2026 — Phase 2 Update**
 
 ---
 
-## 1. Cohort Description
+## 1. Cohort
 
 | Metric | Value |
 |--------|-------|
-| Total participants | 59,757 |
-| Data source | All of Us CDR v9 (cdrv9, C2025Q4R6) |
-| Sleep data | Fitbit `sleep_daily_summary` (main sleep only, ≥4 nights, 4–12 hrs) |
-| Feature matrix | 25 variables across sleep, activity, demographics, BMI |
+| Participants | **59,757** |
+| Data source | All of Us CDR v9 (C2025Q4R6) |
+| Sleep data | Fitbit `sleep_daily_summary` — main sleep, ≥4 nights, 4–12 hrs |
+| Features | Sleep, activity, demographics, BMI, resting HR, SES, self-rated health |
 
-**Demographics:**
-- Mean age: 56.9 years (SD 16.2); range 20–120
-- Female: 66.3% | Male: 30.9% | Non-binary/other: 2.8%
-- White: 70.4% | Black/African American: 7.5% | Asian: 4.8% | Multiracial: 6.9%
-- UBR (underrepresented in biomedical research): 19.6%
-
-**Data quality:**
-- BMI missing: 9.1% (imputed with median in models)
-- Steps missing: 0.7%
+**Demographics:** Mean age 56.9 (SD 16.2) · Female 66.3% · White 70.4% · UBR 19.6%
 
 ---
 
@@ -28,53 +20,88 @@
 
 | Metric | Value |
 |--------|-------|
-| Mean sleep duration | **6.79 hrs** (SD ~1.1) |
-| Median sleep duration | ~6.8 hrs |
+| Mean sleep duration | **6.79 hrs** |
 | Nights < 6 hrs (avg per participant) | **30%** |
 | Sleep consistency (IQR) | ~1.3 hrs |
-| Mean daily steps | 6,852 (SD 3,347) |
-
-30% of nights averaged below 6 hours across the cohort — substantially below the recommended 7–9 hours. This is consistent with published All of Us sleep studies.
+| Mean daily steps | 6,852/day |
 
 ---
 
-## 3. Model Performance (Phase 1)
+## 3. Model Performance
 
-Targets: **mean_sleep_hrs** (duration) and **iqr_sleep_hrs** (consistency).
+### Phase 1 (baseline features)
+| Model | Duration R² | Consistency R² |
+|-------|:-----------:|:--------------:|
+| Ridge | 0.071 | 0.136 |
+| Lasso | 0.070 | 0.127 |
+| Random Forest | 0.085 | 0.159 |
 
-| Model | Duration R² | Duration MAE | Consistency R² | Consistency MAE |
-|-------|:-----------:|:------------:|:--------------:|:---------------:|
-| Ridge | 0.071 | 0.546 hrs | 0.136 | 0.424 hrs |
-| Lasso | 0.070 | 0.547 hrs | 0.127 | 0.427 hrs |
-| Random Forest | **0.085** | **0.542 hrs** | **0.159** | **0.419 hrs** |
+### Phase 2 (+ resting HR, SES, self-rated health)
+| Model | Duration R² | Consistency R² |
+|-------|:-----------:|:--------------:|
+| ElasticNet | 0.080 | 0.152 |
+| Random Forest | 0.086 | 0.157 |
+| **HistGBM** | **0.099** | **0.184** |
 
-Low R² (7–16%) is expected — sleep is driven by unmeasured factors (genetics, stress, medications). Lifestyle factors explaining 7–16% of variance is consistent with epidemiology literature. Sleep consistency is more predictable than duration.
+**+16% relative improvement** on both targets from richer features. Low absolute R² is expected — sleep has high unmeasured variance (genetics, stress, medications).
 
----
+![What predicts sleep duration?](figures/fig_fte_importance_mean_sleep_hrs.png)
 
-## 4. Fairness Findings
-
-| Subgroup | N | Duration R² | Consistency R² |
-|----------|---|:-----------:|:--------------:|
-| Female | 35,524 | 0.108 | 0.216 |
-| Male | 17,224 | 0.114 | 0.201 |
-| UBR | 11,695 | **0.075** | 0.171 |
-| White | 37,879 | 0.125 | 0.235 |
-| Age 18–40 | 10,431 | **0.187** | 0.170 |
-| Age 61–80 | 22,409 | 0.109 | 0.217 |
-
-**Key finding:** UBR participants show a 40% relative gap in model accuracy vs White participants for sleep duration prediction. The model explains less variance for underrepresented groups — a limitation to report explicitly.
+![What predicts sleep consistency?](figures/fig_fte_importance_iqr_sleep_hrs.png)
 
 ---
 
-## 5. Limitations
+## 4. Key Findings
+
+### Sleep duration drivers
+1. **BMI** (0.162) and **female gender** (0.150) — biological factors dominate
+2. **Nights tracked** (0.181) — a proxy for Fitbit engagement, partly methodological
+
+### Sleep consistency drivers
+1. **Age × daily steps interaction** (0.442) — by far the dominant factor. The relationship between physical activity and sleep regularity is strongly moderated by age. Older active adults sleep most consistently.
+2. **Step variability** (0.109) — irregular activity → irregular sleep
+3. **Self-rated health** (0.097) — perceived health status predicts sleep regularity better than duration
+
+---
+
+## 5. Sleep Phenotypes (KMeans, k=4)
+
+| Cluster | N | Sleep | IQR | Short nights | Steps |
+|---------|:-:|:-----:|:---:|:---:|:-----:|
+| Consistent Good Sleepers | 25,176 (42%) | 7.12 hrs | 1.21 | 14% | 7,549 |
+| Chronic Short & Variable | 14,479 (24%) | 6.68 hrs | 2.16 | 36% | 6,047 |
+| Short but Regular | 14,467 (24%) | 5.92 hrs | 1.43 | 55% | 7,058 |
+| Variable Long Sleepers | 5,635 (9%) | 7.88 hrs | 2.38 | 16% | 5,278 |
+
+![Sleep phenotype clusters](figures/fig_fte_cluster_heatmap.png)
+
+![Cluster scatter](figures/fig_fte_cluster_scatter.png)
+
+---
+
+## 6. Fairness
+
+| Subgroup | N | Duration R² |
+|----------|:-:|:-----------:|
+| White | 37,879 | 0.125 |
+| **UBR** | **11,695** | **0.075** |
+| Age 18–40 | 10,431 | 0.187 |
+| Age 61–80 | 22,409 | 0.109 |
+
+**40% relative accuracy gap for UBR participants.** Model performs systematically worse for underrepresented groups — a structural fairness concern.
+
+![Fairness gap by subgroup](figures/fig_fte_slope_fairness.png)
+
+---
+
+## 7. Limitations
 
 1. Cross-sectional design — no causal claims
-2. Wearable bias — Fitbit owners are self-selected
-3. Fairness gap for UBR populations
-4. Missing variables: stress, mental health, medications not yet included
-5. Participant-level averages mask night-to-night dynamics
+2. Fitbit wearers are self-selected (healthier, higher SES)
+3. 40% fairness gap for UBR populations
+4. Survey concept IDs for smoking/alcohol returned unreliable data — excluded
+5. Participant-level aggregation masks night-to-night dynamics
 
 ---
 
-*Aggregate statistics only. No individual-level data exported from Workbench.*
+*All statistics are aggregated. No individual-level data exported from Workbench.*
