@@ -25,17 +25,17 @@ st.set_page_config(
 )
 
 # ── Design tokens ─────────────────────────────────────────────────────────────
-BG    = '#0B1020'
-WHITE = '#101827'
+BG    = '#07131F'
+WHITE = '#0F1B2A'
 DGRAY = '#F8FAFC'
-MGRAY = '#CBD5E1'
-LGRAY = '#334155'
-VGRAY = '#1E293B'
-RED   = '#E05C3A'
-BLUE  = '#3B7EC8'
-GREEN = '#5AA469'
-AMBER = '#E8A838'
-PURPLE = '#7C5CC4'
+MGRAY = '#C7D4E5'
+LGRAY = '#2B4056'
+VGRAY = '#16283A'
+RED   = '#F26D5B'
+BLUE  = '#4FA3D9'
+GREEN = '#5CC8A1'
+AMBER = '#E9B44C'
+PURPLE = '#9B8AE6'
 
 st.markdown("""
 <style>
@@ -44,11 +44,12 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
 
 [data-testid="stAppViewContainer"] {
     background:
-        radial-gradient(circle at top right, rgba(59,126,200,0.20), transparent 34rem),
-        linear-gradient(180deg, #0B1020 0%, #111827 100%) !important;
+        radial-gradient(circle at top right, rgba(92,200,161,0.15), transparent 34rem),
+        radial-gradient(circle at left 18rem, rgba(79,163,217,0.10), transparent 30rem),
+        linear-gradient(180deg, #07131F 0%, #0B1725 48%, #101827 100%) !important;
 }
 [data-testid="stHeader"] {
-    background: rgba(11,16,32,0.86) !important;
+    background: rgba(7,19,31,0.86) !important;
 }
 .block-container {
     max-width: 1240px;
@@ -69,7 +70,7 @@ p, li, label {
 
 /* Sidebar */
 [data-testid="stSidebar"] {
-    background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%) !important;
+    background: linear-gradient(160deg, #07131F 0%, #0F2335 100%) !important;
 }
 [data-testid="stSidebar"] * { color: #e8eaf6 !important; }
 [data-testid="stSidebar"] .stRadio label { color: #e8eaf6 !important; }
@@ -91,7 +92,7 @@ p, li, label {
     margin: 16px 0;
 }
 .kpi-card {
-    background: rgba(16,24,39,0.92); border-radius: 8px;
+    background: rgba(15,27,42,0.88); border-radius: 8px;
     padding: 22px 18px; text-align: center;
     box-shadow: 0 14px 30px rgba(0,0,0,0.22);
     border: 1px solid rgba(148,163,184,0.18);
@@ -99,6 +100,11 @@ p, li, label {
     transition: box-shadow 0.2s;
 }
 .kpi-card:hover { box-shadow: 0 18px 38px rgba(59,126,200,0.20); }
+.kpi-card.primary {
+    grid-column: span 2;
+    text-align: left;
+    background: linear-gradient(135deg, rgba(79,163,217,0.22), rgba(92,200,161,0.13));
+}
 .kpi-val   { font-size: clamp(1.45rem, 2.6vw, 2rem); font-weight: 750; color: var(--accent, #3B7EC8); margin: 0; line-height: 1; }
 .kpi-label { font-size: 0.78rem; font-weight: 600; color: #CBD5E1; margin: 6px 0 2px;
              text-transform: uppercase; letter-spacing: 0.06em; }
@@ -112,7 +118,7 @@ p, li, label {
     margin: 16px 0 8px;
 }
 .insight {
-    background: rgba(16,24,39,0.88);
+    background: rgba(15,27,42,0.86);
     border: 1px solid rgba(148,163,184,0.18);
     border-left: 5px solid var(--accent, #3B7EC8);
     border-radius: 8px;
@@ -145,9 +151,9 @@ p, li, label {
     font-size: 0.92rem; line-height: 1.55; color: #F8FAFC;
     border: 1px solid rgba(148,163,184,0.18);
 }
-.box-blue  { background: rgba(59,126,200,0.16); border-left: 4px solid #3B7EC8; }
-.box-red   { background: rgba(224,92,58,0.16); border-left: 4px solid #E05C3A; }
-.box-green { background: rgba(90,164,105,0.16); border-left: 4px solid #5AA469; }
+.box-blue  { background: rgba(79,163,217,0.15); border-left: 4px solid #4FA3D9; }
+.box-red   { background: rgba(242,109,91,0.15); border-left: 4px solid #F26D5B; }
+.box-green { background: rgba(92,200,161,0.14); border-left: 4px solid #5CC8A1; }
 .box b     { color: #FFFFFF; }
 
 /* Cluster cards */
@@ -158,7 +164,7 @@ p, li, label {
     margin: 16px 0;
 }
 .cl-card {
-    background: rgba(16,24,39,0.92); border-radius: 8px; padding: 18px 16px;
+    background: rgba(15,27,42,0.9); border-radius: 8px; padding: 18px 16px;
     border: 1px solid rgba(148,163,184,0.18);
     box-shadow: 0 14px 30px rgba(0,0,0,0.22);
     transition: transform 0.15s, box-shadow 0.15s;
@@ -175,6 +181,124 @@ p, li, label {
 .section-label {
     font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
     text-transform: uppercase; color: #94A3B8; margin: 24px 0 8px;
+}
+
+/* Clinical summary */
+.clinical-hero {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.15fr) minmax(260px, 0.85fr);
+    gap: 16px;
+    margin: 18px 0 20px;
+}
+.clinical-panel {
+    background: linear-gradient(135deg, rgba(15,27,42,0.96), rgba(14,43,55,0.9));
+    border: 1px solid rgba(148,163,184,0.20);
+    border-radius: 8px;
+    padding: 22px;
+    box-shadow: 0 18px 44px rgba(0,0,0,0.28);
+}
+.clinical-label {
+    color: #8FB7CF;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+}
+.clinical-score {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.clinical-score strong {
+    color: #F8FAFC;
+    font-size: clamp(2.2rem, 4.5vw, 4rem);
+    line-height: 1;
+}
+.clinical-score span {
+    color: #9BE7C9;
+    font-weight: 700;
+    font-size: 1rem;
+}
+.clinical-copy {
+    color: #C7D4E5;
+    max-width: 62ch;
+    margin: 0 0 16px;
+    line-height: 1.5;
+}
+.status-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(110px, 1fr));
+    gap: 10px;
+}
+.status-pill {
+    border-radius: 8px;
+    padding: 12px;
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(148,163,184,0.16);
+}
+.status-pill b {
+    display: block;
+    color: var(--accent);
+    font-size: 1.05rem;
+    margin-bottom: 3px;
+}
+.status-pill span {
+    color: #CBD5E1;
+    font-size: 0.78rem;
+}
+.reference-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.range-track {
+    position: relative;
+    height: 14px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #F26D5B 0 38%, #E9B44C 38% 58%, #5CC8A1 58% 100%);
+    margin: 18px 0 10px;
+}
+.range-marker {
+    position: absolute;
+    top: -6px;
+    left: 55%;
+    width: 4px;
+    height: 26px;
+    border-radius: 999px;
+    background: #F8FAFC;
+    box-shadow: 0 0 0 4px rgba(248,250,252,0.14);
+}
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    color: #94A3B8;
+    font-size: 0.75rem;
+}
+.phenotype-bars {
+    display: grid;
+    gap: 10px;
+}
+.phenotype-bar {
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) 3fr 42px;
+    gap: 10px;
+    align-items: center;
+    color: #CBD5E1;
+    font-size: 0.8rem;
+}
+.phenotype-fill {
+    height: 9px;
+    border-radius: 999px;
+    background: rgba(148,163,184,0.18);
+    overflow: hidden;
+}
+.phenotype-fill span {
+    display: block;
+    height: 100%;
+    width: var(--w);
+    border-radius: inherit;
+    background: var(--accent);
 }
 
 /* Compact tables rendered as responsive cards */
@@ -224,6 +348,7 @@ p, li, label {
     .kpi-row { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
     .insight-grid { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
     .cl-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+    .clinical-hero { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
     .block-container {
@@ -235,12 +360,15 @@ p, li, label {
     .kpi-row, .insight-grid, .cl-grid {
         grid-template-columns: 1fr;
     }
+    .kpi-card.primary { grid-column: span 1; }
     .kpi-card, .insight, .cl-card {
         padding: 16px 14px;
     }
     .kpi-card {
         text-align: left;
     }
+    .status-row { grid-template-columns: 1fr; }
+    .phenotype-bar { grid-template-columns: 1fr; gap: 5px; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -333,6 +461,7 @@ with st.sidebar:
     st.markdown("## 🌙 Sleep & Lifestyle")
     st.markdown("**All of Us Research Program**")
     st.markdown("SIADS 699 &nbsp;·&nbsp; Team Sleep Deprived &nbsp;·&nbsp; 2026", unsafe_allow_html=True)
+    st.caption("Sophia Boettcher · Auston Balwinski\nHunter Belous · Jared Fox")
     st.divider()
     page = st.radio("Dashboard section", [
         "📊  Overview",
@@ -351,16 +480,47 @@ with st.sidebar:
 # ═══════════════════════════════════════════════════════════════════════════════
 if "Overview" in page:
     st.title("Sleep & Lifestyle in the All of Us Cohort")
-    st.markdown("*Can lifestyle and demographic factors predict sleep duration and consistency in 59,757 Fitbit wearers?*")
-    st.divider()
+    st.markdown("*Cohort-level sleep health, lifestyle signals, and model equity in 59,757 Fitbit wearers.*")
+
+    st.markdown("""
+    <div class="clinical-hero">
+      <div class="clinical-panel">
+        <p class="clinical-label">Cohort sleep health signal</p>
+        <div class="clinical-score"><strong>6.79</strong><span>hours/night average</span></div>
+        <p class="clinical-copy">
+          Average sleep duration sits just below the 7-hour reference threshold, while short sleep burden
+          and night-to-night variability identify a meaningful risk segment for follow-up.
+        </p>
+        <div class="status-row">
+          <div class="status-pill" style="--accent:#E9B44C"><b>Below reference</b><span>Mean duration under 7h</span></div>
+          <div class="status-pill" style="--accent:#F26D5B"><b>30% burden</b><span>Short sleep nights</span></div>
+          <div class="status-pill" style="--accent:#5CC8A1"><b>Consistency signal</b><span>More predictable than duration</span></div>
+        </div>
+      </div>
+      <div class="clinical-panel reference-card">
+        <div>
+          <p class="clinical-label">Sleep duration reference</p>
+          <div class="range-track"><span class="range-marker"></span></div>
+          <div class="range-labels"><span>Short</span><span>7h reference</span><span>Adequate</span></div>
+        </div>
+        <div>
+          <p class="clinical-label" style="margin-top:20px;">Phenotype distribution</p>
+          <div class="phenotype-bars">
+            <div class="phenotype-bar"><span>Good sleepers</span><div class="phenotype-fill"><span style="--w:42%; --accent:#5CC8A1"></span></div><span>42%</span></div>
+            <div class="phenotype-bar"><span>Short variable</span><div class="phenotype-fill"><span style="--w:24%; --accent:#F26D5B"></span></div><span>24%</span></div>
+            <div class="phenotype-bar"><span>Short regular</span><div class="phenotype-fill"><span style="--w:24%; --accent:#E9B44C"></span></div><span>24%</span></div>
+            <div class="phenotype-bar"><span>Variable long</span><div class="phenotype-fill"><span style="--w:9%; --accent:#9B8AE6"></span></div><span>9%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>""", unsafe_allow_html=True)
 
     st.markdown("""
     <div class="kpi-row">
-      <div class="kpi-card" style="--accent:#3B7EC8"><p class="kpi-val">59,757</p><p class="kpi-label">Participants</p><p class="kpi-sub">Fitbit wearers, AoU CDR v9</p></div>
-      <div class="kpi-card" style="--accent:#E8A838"><p class="kpi-val">6.79 hrs</p><p class="kpi-label">Avg Sleep Duration</p><p class="kpi-sub">Below 7h recommendation</p></div>
-      <div class="kpi-card" style="--accent:#E05C3A"><p class="kpi-val">30%</p><p class="kpi-label">Short Sleep Nights</p><p class="kpi-sub">< 6 hrs avg per person</p></div>
-      <div class="kpi-card" style="--accent:#5AA469"><p class="kpi-val">R²=0.184</p><p class="kpi-label">Best Consistency Model</p><p class="kpi-sub">HistGBM, Phase 2</p></div>
-      <div class="kpi-card" style="--accent:#7C5CC4"><p class="kpi-val">4</p><p class="kpi-label">Sleep Phenotypes</p><p class="kpi-sub">Identified via KMeans</p></div>
+      <div class="kpi-card primary" style="--accent:#5CC8A1"><p class="kpi-val">R²=0.184</p><p class="kpi-label">Best model signal</p><p class="kpi-sub">Consistency model, HistGBM Phase 2</p></div>
+      <div class="kpi-card" style="--accent:#4FA3D9"><p class="kpi-val">59,757</p><p class="kpi-label">Participants</p><p class="kpi-sub">Fitbit wearers, AoU CDR v9</p></div>
+      <div class="kpi-card" style="--accent:#F26D5B"><p class="kpi-val">40%</p><p class="kpi-label">Equity gap</p><p class="kpi-sub">UBR vs White duration R²</p></div>
+      <div class="kpi-card" style="--accent:#9B8AE6"><p class="kpi-val">4</p><p class="kpi-label">Phenotypes</p><p class="kpi-sub">Distinct sleep profiles</p></div>
     </div>""", unsafe_allow_html=True)
 
     insight_cards([

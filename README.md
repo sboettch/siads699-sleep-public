@@ -110,7 +110,7 @@ If you use or build on this work, please cite:
 
 ```bibtex
 @misc{boettcher2026sleep,
-  author       = {Boettcher, Sophia},
+  author       = {Boettcher, Sophia and Balwinski, Auston and Belous, Hunter and Fox, Jared},
   title        = {Predicting and Phenotyping Sleep Health in a Diverse National Cohort:
                   Evidence from the All of Us Research Program},
   year         = {2026},
