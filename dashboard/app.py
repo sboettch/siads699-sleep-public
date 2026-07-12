@@ -107,7 +107,7 @@ p, li, label {
 }
 .kpi-val   { font-size: clamp(1.45rem, 2.6vw, 2rem); font-weight: 750; color: var(--accent, #3B7EC8); margin: 0; line-height: 1; }
 .kpi-label { font-size: 0.78rem; font-weight: 600; color: #CBD5E1; margin: 6px 0 2px;
-             text-transform: uppercase; letter-spacing: 0.06em; }
+             letter-spacing: 0; }
 .kpi-sub   { font-size: 0.75rem; color: #94A3B8; margin: 0; }
 
 /* Insight chips */
@@ -180,7 +180,7 @@ p, li, label {
 /* Section header */
 .section-label {
     font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
-    text-transform: uppercase; color: #94A3B8; margin: 24px 0 8px;
+    color: #94A3B8; margin: 24px 0 8px;
 }
 
 /* Clinical summary */
@@ -201,7 +201,6 @@ p, li, label {
     color: #8FB7CF;
     font-size: 0.76rem;
     font-weight: 700;
-    text-transform: uppercase;
     margin: 0 0 8px;
 }
 .clinical-score {
@@ -318,7 +317,6 @@ p, li, label {
     background: rgba(15,23,42,0.92);
     color: #CBD5E1;
     font-size: 0.73rem;
-    text-transform: uppercase;
     text-align: left;
     padding: 10px 12px;
     border-bottom: 1px solid rgba(148,163,184,0.18);
@@ -344,11 +342,49 @@ p, li, label {
     text-align: center;
 }
 
+.read-note {
+    background: rgba(79,163,217,0.10);
+    border: 1px solid rgba(79,163,217,0.24);
+    border-left: 4px solid #4FA3D9;
+    border-radius: 8px;
+    padding: 11px 14px;
+    margin: 10px 0 16px;
+    color: #DDE6F3;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+.read-note b {
+    color: #FFFFFF;
+}
+.plain-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 12px 0 18px;
+}
+.plain-card {
+    background: rgba(15,27,42,0.82);
+    border: 1px solid rgba(148,163,184,0.16);
+    border-radius: 8px;
+    padding: 13px 14px;
+}
+.plain-card b {
+    color: #F8FAFC;
+    display: block;
+    margin-bottom: 4px;
+}
+.plain-card span {
+    color: #CBD5E1;
+    font-size: 0.86rem;
+    line-height: 1.4;
+}
+
 @media (max-width: 1100px) {
     .kpi-row { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
     .insight-grid { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
     .cl-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
     .clinical-hero { grid-template-columns: 1fr; }
+    .plain-list { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
     .block-container {
@@ -379,6 +415,16 @@ def box(text, kind='blue'):
 
 def section(label):
     st.markdown(f'<div class="section-label">{label}</div>', unsafe_allow_html=True)
+
+def read_note(text):
+    st.markdown(f'<div class="read-note">{text}</div>', unsafe_allow_html=True)
+
+def plain_cards(cards):
+    html = '<div class="plain-list">'
+    for title, body in cards:
+        html += f'<div class="plain-card"><b>{title}</b><span>{body}</span></div>'
+    html += '</div>'
+    st.markdown(html, unsafe_allow_html=True)
 
 def insight_cards(cards):
     html = '<div class="insight-grid">'
@@ -568,8 +614,8 @@ if "Overview" in page:
 # MODELS
 # ═══════════════════════════════════════════════════════════════════════════════
 elif "Models" in page:
-    st.title("Model Performance")
-    st.markdown("5-fold cross-validated R² and MAE across all 59,757 participants.")
+    st.title("Which Model Works Best?")
+    st.markdown("Compare simple baseline models with models that add health, activity, and survey information.")
     st.divider()
 
     ctrl1, ctrl2 = st.columns([1, 1])
@@ -582,10 +628,16 @@ elif "Models" in page:
 
     p1 = cv1[cv1.target == tkey][['model','R2','MAE']].copy()
     p2 = cv2[cv2.target == tkey][['model','R2','MAE']].copy()
+    best_r2 = p2.sort_values('R2', ascending=False).iloc[0]
+    plain_cards([
+        ("Best current model", f"{best_r2['model']} explains the most variation for this outcome."),
+        ("How to read the chart", "Dots farther right mean better model fit for R², or more error for MAE."),
+        ("Bottom line", "Sleep consistency is easier to predict than sleep duration in this cohort."),
+    ])
 
     all_m = list(p1['model'].unique()) + [m for m in p2['model'].unique() if m not in p1['model'].values]
     metric_col = 'R2' if model_metric == "R² lift" else 'MAE'
-    metric_label = 'R² (higher is better)' if metric_col == 'R2' else 'MAE hours (lower is better)'
+    metric_label = 'Model fit score (higher is better)' if metric_col == 'R2' else 'Average prediction error in hours (lower is better)'
     p1d = p1.set_index('model')[metric_col].reindex(all_m).fillna(0)
     p2d = p2.set_index('model')[metric_col].reindex(all_m).fillna(0)
 
@@ -606,7 +658,7 @@ elif "Models" in page:
     ax.set_yticks(y)
     ax.set_yticklabels(all_m, fontsize=10, color=DGRAY)
     ax.set_xlabel(metric_label, fontsize=10, color=MGRAY)
-    ax.set_title(f'Model {model_metric} — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=12)
+    ax.set_title(f'Did the added health and survey data help? — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=12)
     ax.xaxis.grid(True, color=LGRAY, lw=0.8)
     ax.yaxis.grid(False)
     ax.legend(fontsize=9)
@@ -615,6 +667,7 @@ elif "Models" in page:
         ax.spines[sp].set_visible(False)
     plt.tight_layout()
     st.pyplot(fig, use_container_width=True); plt.close()
+    read_note("<b>How to read this:</b> each row is a model. The pale dot is the simpler Phase 1 model, and the brighter dot is Phase 2 with more health and survey features. The number in parentheses shows improvement.")
 
     section("Phase 2 Results")
     detail1, detail2 = st.columns([1, 1])
@@ -625,7 +678,7 @@ elif "Models" in page:
     with detail2:
         bm = d.iloc[0]
         box(f"Best: <b>{bm['model']}</b><br>R² = {bm['R2']:.3f} &nbsp;|&nbsp; MAE = {bm['MAE']*60:.0f} min", "green")
-        box("Low R² is expected — sleep is driven by unmeasured factors: genetics, stress, medications. 10–18% explained variance aligns with the sleep epidemiology literature.", "blue")
+        box("Model fit is modest because sleep is shaped by many things not measured here, including stress, medications, work schedules, and health conditions.", "blue")
 
     st.divider()
     section("Phase 1 → Phase 2 Improvement")
@@ -639,8 +692,8 @@ elif "Models" in page:
 # SLEEP PHENOTYPES
 # ═══════════════════════════════════════════════════════════════════════════════
 elif "Phenotypes" in page:
-    st.title("Sleep Phenotypes")
-    st.markdown("KMeans clustering (k=4) identifies four distinct sleep types based on duration, variability, and short sleep rate.")
+    st.title("Sleep Groups in the Cohort")
+    st.markdown("Participants cluster into four sleep patterns based on duration, regularity, short sleep, and activity.")
     st.divider()
 
     CC = {'Consistent Good Sleepers': GREEN, 'Short but Regular': BLUE,
@@ -666,6 +719,11 @@ elif "Phenotypes" in page:
     x_map = {"Sleep duration": "mean_sleep", "Daily steps": "mean_steps", "Age": "mean_age", "BMI": "mean_bmi"}
     y_map = {"Variability": "mean_iqr", "Short-night rate": "pct_short", "Daily steps": "mean_steps", "BMI": "mean_bmi"}
     sort_col, ascending = sort_map[sort_choice]
+    plain_cards([
+        ("Largest group", "Consistent Good Sleepers make up about 42% of the cohort."),
+        ("Higher-risk pattern", "Chronic Short & Variable combines short sleep with irregular sleep timing."),
+        ("Map reading tip", "Bubble size shows how common each group is; position shows the selected traits."),
+    ])
     cards_html = '<div class="cl-grid">'
     for _, row in cl.sort_values(sort_col, ascending=ascending).iterrows():
         nm = row['cluster_label']; c = CC.get(nm, BLUE); ic = CI.get(nm, '•')
@@ -685,7 +743,7 @@ elif "Phenotypes" in page:
     cards_html += '</div>'
     st.markdown(cards_html, unsafe_allow_html=True)
 
-    section("Phenotype Map")
+    section("Group Map")
     fig, ax = chart_fig(10, 5)
     for _, row in cl.iterrows():
         nm = row['cluster_label']
@@ -705,12 +763,13 @@ elif "Phenotypes" in page:
         ax.text(7.03, ax.get_ylim()[0] + 0.04, '7h reference', color=AMBER, fontsize=8.8, fontweight='650')
     ax.set_xlabel(x_choice, fontsize=10, color=MGRAY)
     ax.set_ylabel(y_choice, fontsize=10, color=MGRAY)
-    ax.set_title('Sleep phenotypes by duration, variability, and cohort share', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
+    ax.set_title('How the sleep groups differ', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
     ax.xaxis.grid(True, color=LGRAY, lw=0.8)
     plt.tight_layout()
     st.pyplot(fig, use_container_width=True); plt.close()
+    read_note("<b>How to read this:</b> each bubble is one sleep group. Larger bubbles represent more people. Moving right or up means the group has more of the selected trait.")
 
-    section("Feature Heatmap")
+    section("Profile Comparison")
     fc  = ['mean_sleep','mean_iqr','pct_short','mean_steps','mean_bmi','mean_age']
     fl  = ['Sleep Duration','Variability','Short Night %','Daily Steps','BMI','Age']
     z   = cl.set_index('cluster_label')[fc].copy()
@@ -719,7 +778,7 @@ elif "Phenotypes" in page:
     zn  = zn.reindex([r for r in ORD if r in zn.index])
 
     fig, ax = plt.subplots(figsize=(11, 3.5), facecolor=WHITE); ax.set_facecolor(WHITE)
-    im = ax.imshow(zn.values, cmap='RdBu_r', aspect='auto', vmin=-2, vmax=2)
+    im = ax.imshow(zn.values, cmap='PuOr_r', aspect='auto', vmin=-2, vmax=2)
     ax.set_xticks(range(len(fl))); ax.set_xticklabels(fl, fontsize=10, color=DGRAY)
     ax.set_yticks(range(len(zn))); ax.set_yticklabels(zn.index, fontsize=10, color=DGRAY)
     ax.tick_params(left=False, bottom=False)
@@ -729,10 +788,11 @@ elif "Phenotypes" in page:
             fmt = f'{raw:.0%}' if feat=='pct_short' else (f'{raw:,.0f}' if feat=='mean_steps' else f'{raw:.1f}')
             ax.text(j, i, fmt, ha='center', va='center', fontsize=9.5,
                     color='white' if abs(zv)>1.2 else DGRAY, fontweight='600')
-    plt.colorbar(im, ax=ax, label='z-score', fraction=0.02, pad=0.02)
-    ax.set_title('Cluster Profiles — red = above average, blue = below average', fontsize=11, fontweight='bold', color=DGRAY, pad=10)
+    plt.colorbar(im, ax=ax, label='below avg  ←  group value  →  above avg', fraction=0.02, pad=0.02)
+    ax.set_title('What is unusually high or low for each group?', fontsize=11, fontweight='bold', color=DGRAY, pad=10)
     plt.tight_layout()
     st.pyplot(fig, use_container_width=True); plt.close()
+    read_note("<b>How to read this:</b> each cell shows the actual group value. Color only adds emphasis: one side means below the cohort average, the other means above average.")
 
     box("⚠️ <b>Short but Regular</b> (24%): 55% of nights average under 6 hours — severe chronic deprivation with a consistent schedule. High steps suggest trading sleep for activity.", "red")
     box("💡 <b>Variable Long Sleepers</b> (9%): Highest sleep duration but lowest step count and extreme night-to-night variability. Likely shift workers, retirees, or those with irregular schedules.", "blue")
@@ -741,8 +801,8 @@ elif "Phenotypes" in page:
 # FAIRNESS
 # ═══════════════════════════════════════════════════════════════════════════════
 elif "Fairness" in page:
-    st.title("Model Fairness")
-    st.markdown("Does the model perform equally across demographic groups?")
+    st.title("Does the Model Work Equally Well?")
+    st.markdown("Check whether model accuracy is similar across demographic groups.")
     st.divider()
 
     fcol1, fcol2 = st.columns([1, 1])
@@ -756,6 +816,14 @@ elif "Fairness" in page:
     sub['delta'] = sub['R2'] - overall
     sort_metric = 'delta' if fairness_view == "Deviation from average" else 'R2'
     sub = sub.sort_values(sort_metric, ascending=False)
+    ubr = sub[sub.subgroup=='UBR']['R2'].values[0]
+    wht = sub[sub.subgroup=='White']['R2'].values[0]
+    gap = (wht - ubr) / wht * 100
+    plain_cards([
+        ("What this checks", "Whether the model performs similarly for different groups."),
+        ("Main equity signal", f"UBR participants have about a {gap:.0f}% lower duration model fit than White participants."),
+        ("How to read it", "Bars left of zero mean lower-than-average model performance."),
+    ])
 
     colors = [RED if d < -0.005 else GREEN if d > 0.005 else LGRAY for d in sub['delta']]
     fig, ax = chart_fig(11.5, 6)
@@ -771,8 +839,8 @@ elif "Fairness" in page:
         label = f"{delta:+.3f}  R² {r2:.3f}" if fairness_view == "Deviation from average" else f"R² {r2:.3f}  ({delta:+.3f})"
         ax.text(val + offset, bar.get_y() + bar.get_height()/2, label,
                 va='center', ha=ha, fontsize=9.3, color=DGRAY)
-    ax.set_xlabel('R² difference from subgroup average' if fairness_view == "Deviation from average" else "R²", fontsize=10, color=MGRAY)
-    ax.set_title(f'Fairness {fairness_view} — {target}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
+    ax.set_xlabel('Difference from average model performance' if fairness_view == "Deviation from average" else "Model fit score", fontsize=10, color=MGRAY)
+    ax.set_title(f'Where does model performance differ? — {target}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
     ax.xaxis.grid(True, color=LGRAY, lw=0.8); ax.yaxis.grid(False)
     ax.legend(handles=[mpatches.Patch(color=RED,label='Below avg (gap)'),
                         mpatches.Patch(color=GREEN,label='Above avg')], fontsize=9)
@@ -783,6 +851,7 @@ elif "Fairness" in page:
         ax.set_xlim(0, sub['R2'].max() * 1.25)
     plt.tight_layout()
     st.pyplot(fig, use_container_width=True); plt.close()
+    read_note("<b>How to read this:</b> groups to the right perform better than the average group. Groups to the left perform worse. This does not mean sleep is better or worse; it means the model is more or less accurate for that group.")
 
     section("Results by Subgroup")
     detail1, detail2 = st.columns([1, 1])
@@ -793,9 +862,6 @@ elif "Fairness" in page:
         mini_table(d[['subgroup','N','R²','vs avg']], formats={'N': lambda x: f"{int(x):,}"})
 
     with detail2:
-        ubr = sub[sub.subgroup=='UBR']['R2'].values[0]
-        wht = sub[sub.subgroup=='White']['R2'].values[0]
-        gap = (wht - ubr) / wht * 100
         young = sub[sub.subgroup=='Age 18-40']['R2'].values[0]
 
         box(f"⚠️ <b>{gap:.0f}% fairness gap:</b> UBR R²={ubr:.3f} vs White R²={wht:.3f}. The model explains substantially less for underrepresented minority participants — driven by training data composition (70% White cohort).", "red")
@@ -805,8 +871,8 @@ elif "Fairness" in page:
 # FEATURE IMPORTANCE
 # ═══════════════════════════════════════════════════════════════════════════════
 elif "Importance" in page:
-    st.title("Feature Importance")
-    st.markdown("Random Forest feature importances trained on the full cohort (mean decrease in impurity).")
+    st.title("Which Factors Mattered Most?")
+    st.markdown("See which inputs the model used most when making sleep predictions.")
     st.divider()
 
     icol1, icol2, icol3 = st.columns([1, 1, 1])
@@ -820,6 +886,11 @@ elif "Importance" in page:
     imp = imp[imp > 0.005]
     imp_chart = imp.head(top_n)
     tlbl = "Sleep Duration" if "Duration" in target else "Sleep Consistency (IQR)"
+    plain_cards([
+        ("Top signal", f"{imp.index[0]} is the highest-ranked input for this outcome."),
+        ("Not causation", "A high score means the model used this factor often, not that it causes sleep changes."),
+        ("Useful reading", "Longer bars are more influential within this model."),
+    ])
 
     simp = imp_chart.sort_values()
     colors = []
@@ -835,8 +906,8 @@ elif "Importance" in page:
     for bar, val in zip(bars, simp.values):
         ax.text(val + 0.003, bar.get_y() + bar.get_height()/2, f'{val:.3f}',
                 va='center', fontsize=9, color=DGRAY)
-    ax.set_xlabel('Feature Importance (RF)', fontsize=10, color=MGRAY)
-    ax.set_title(f'Feature Importances — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
+    ax.set_xlabel('Relative influence in the model', fontsize=10, color=MGRAY)
+    ax.set_title(f'Which inputs influenced the model most? — {tlbl}', fontsize=12, fontweight='bold', color=DGRAY, pad=10)
     ax.xaxis.grid(True, color=LGRAY, lw=0.8); ax.yaxis.grid(False)
     ax.tick_params(left=False)
     for sp in ['left']: ax.spines[sp].set_visible(False)
@@ -845,6 +916,7 @@ elif "Importance" in page:
             fontsize=8.8, color=RED, fontweight='700')
     plt.tight_layout()
     st.pyplot(fig, use_container_width=True); plt.close()
+    read_note("<b>How to read this:</b> longer bars had more influence on the model. These are prediction signals, not proof that the factor directly causes sleep duration or consistency.")
 
     section("Top 5 Features")
     detail1, detail2 = st.columns([1, 1])
